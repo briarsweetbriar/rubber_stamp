@@ -1,6 +1,6 @@
 ControlledVersioning [![Gem Version](https://badge.fury.io/rb/controlled_versioning.png)](http://badge.fury.io/rb/controlled_versioning) [![Build Status](https://travis-ci.org/timothythehuman/controlled_versioning.png?branch=master)](https://travis-ci.org/timothythehuman/controlled_versioning) [![Code Climate](https://codeclimate.com/repos/52f14fbd69568017f9000949/badges/88b0d048286329d8ba82/gpa.png)](https://codeclimate.com/repos/52f14fbd69568017f9000949/feed)
 =====================
-ControlledVersioning adds model versioning to a Rails app, with the ability to accept and decline revisions before actually persisting them to the database. This gem is inspired by the excellent [PaperTrail](https://github.com/airblade/paper_trail), though with more emphasis on controlling data than simply recording it. This makes it ideal for crowd-sourced data, as contributions and edits can be reviewed before publication.
+ControlledVersioning extends Rails with versioning functionality, including the ability to accept and decline revisions. This gem is inspired by the excellent [PaperTrail](https://github.com/airblade/paper_trail), though with more emphasis on controlling incoming data than simply recording it. This makes ControlledVersioning ideal for crowd-sourced websites, as contributions and revisions can be reviewed before publication.
 
 Compatibility
 -------------
