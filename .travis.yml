@@ -1,0 +1,16 @@
+language: ruby
+rvm:
+- 2.0.0
+before_script:
+- psql -c "create database dummy_test;" -U postgres
+- psql -c "CREATE USER dummy WITH PASSWORD 'dummy';" -U postgres
+script:
+- RAILS_ENV=test bundle exec rake db:migrate --trace
+- bundle exec rspec spec
+deploy:
+  provider: rubygems
+  api_key:
+    secure: KBicoeTv4ogdPShmwIOAL2M0Kl+2Lpg9A3H2AKWtYLsir4x1e9FAlg1I/OqZyCdG1ButMiF2OAoOxtSPt2xfORSz7UTfuFXuDvEDvI14dKwJSyjYJKaCIp2zyDQM7BUFY/5tskK5QznTrrE/Fr/CmDawwhE3dYep9tKljWpyRj8=
+  gem: controlled_versioning
+  on:
+    repo: timothythehuman/controlled_versioning
