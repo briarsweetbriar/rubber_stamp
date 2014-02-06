@@ -54,6 +54,37 @@ describe "ControlledVersioning" do
     expect(revision.notes).to be_nil
   end
 
+  context 'has a scope that' do
+    before :each do
+      @resource = create(:versionable_resource)
+      @accepted_1 = @resource.submit_revision(r_string: "accepted 1")
+      @accepted_2 = @resource.submit_revision(r_string: "accepted 2")
+      @declined_1 = @resource.submit_revision(r_string: "declined 1")
+      @declined_2 = @resource.submit_revision(r_string: "declined 2")
+      @pending_1 = @resource.initial_version
+      @pending_2 = @resource.submit_revision(r_string: "pending 2")
+      @accepted_1.accept
+      @accepted_2.accept
+      @declined_1.decline
+      @declined_2.decline
+    end
+
+    it 'returns an array of pending versions' do
+      expect(@resource.versions.pending).to match_array(
+        [@pending_1, @pending_2])
+    end
+
+    it 'returns an array of accepted versions' do
+      expect(@resource.versions.accepted).to match_array(
+        [@accepted_1, @accepted_2])
+    end
+
+    it 'returns an array of declined versions' do
+      expect(@resource.versions.declined).to match_array(
+        [@declined_1, @declined_2])
+    end
+  end
+
   context 'by default' do
     before :each do
       @resource = create(:versionable_resource)

@@ -7,6 +7,10 @@ module ControlledVersioning
 
     validates :versionable, presence: true
 
+    scope :pending, -> { where(pending: true) }
+    scope :accepted, -> { where(accepted: true) }
+    scope :declined, -> { where(declined: true) }
+
     def accept
       Revision::Publisher.new(self).accept_revision unless initial?
       update_attributes(pending: false, accepted: true)

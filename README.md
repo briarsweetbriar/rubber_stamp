@@ -80,20 +80,29 @@ When updating a versionable model, you'll need to use `submit_revision` instead 
 
 When using `submit_revision`, your original `@my_model` will not be altered. Instead, ControlledVersioning creates a new version with the submitted revisions. You can then review this submission:
 
-    @my_model.versions.last
+    @my_model.versions.pending.last
 
 And either decline it:
 
-    @my_model.versions.last.decline
+    @my_model.versions.pending.last.decline
 
 Or accept it:
 
-    @my_model.versions.last.accept
+    @my_model.versions.pending.last.accept
 
 If you accept it, then ControlledVersioning will update the original with your revisions:
 
     @my_model.title # => "fragments from Work in Progress"
     @my_model.submit_revision(title: "Finnegans Wake")
     @my_model.title # => "fragments from Work in Progress"
-    @my_model.versions.last.accept
+    @my_model.versions.pending.last.accept
     @my_model.title # => "Finnegans Wake"
+
+Scopes
+------
+
+The `Version` model supports three scopes corresponding to the three states a version can be in. They are:
+
+    @my_model.versions.pending
+    @my_model.versions.accepted
+    @my_model.versions.declined
