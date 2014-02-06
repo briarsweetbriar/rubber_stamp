@@ -11,7 +11,7 @@ Installation
 ------------
 
  1. Add ControlledVersioning to your gemfile: `gem 'controlled_versioning'`
- 2. Run this in your app folder: `rails generate controlled_versioning:install`
+ 2. Run this in your app folder: `rails generate controlled_versioning:install:migrations`
  3. Run your migrations: `rake db:migrate`
  4. Add `acts_as_versionable` to the models you want to have controlled versioning
  
