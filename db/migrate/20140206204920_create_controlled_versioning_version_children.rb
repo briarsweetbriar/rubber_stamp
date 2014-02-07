@@ -6,9 +6,13 @@ class CreateControlledVersioningVersionChildren < ActiveRecord::Migration
       t.integer  :version_id, null: false
       t.string   :versionable_type
       t.integer  :versionable_id
+      t.string   :association_name, null: false
 
       t.boolean  :marked_for_removal, null: false, default: false
     end
+    add_index :controlled_versioning_version_children,
+      :association_name,
+      name: "controlled_versioning_version_children_on_association"
     add_index :controlled_versioning_version_children,
       [:version_type, :version_id],
       name: "controlled_versioning_version_children_on_version"

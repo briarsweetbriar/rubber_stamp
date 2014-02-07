@@ -18,7 +18,7 @@ FactoryGirl.define do
             grand_children_count 3
         end
 
-        after(:create) do |child, evaluator|
+        before(:create) do |child, evaluator|
             create_list(:grand_child_resource, evaluator.grand_children_count,
                 child_resource: child)
         end

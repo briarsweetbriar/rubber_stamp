@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140206173609) do
+ActiveRecord::Schema.define(version: 20140206204920) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -46,9 +46,11 @@ ActiveRecord::Schema.define(version: 20140206173609) do
     t.integer "version_id",                         null: false
     t.string  "versionable_type"
     t.integer "versionable_id"
+    t.string  "association_name",                   null: false
     t.boolean "marked_for_removal", default: false, null: false
   end
 
+  add_index "controlled_versioning_version_children", ["association_name"], name: "controlled_versioning_version_children_on_association", using: :btree
   add_index "controlled_versioning_version_children", ["version_type", "version_id"], name: "controlled_versioning_version_children_on_version", using: :btree
   add_index "controlled_versioning_version_children", ["versionable_type", "versionable_id"], name: "controlled_versioning_version_children_on_versionable", using: :btree
 

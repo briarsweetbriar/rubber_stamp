@@ -10,5 +10,7 @@ FactoryGirl.define do
     r_text "my text"
     r_time Time.now
 
+    initialize_with { VersionableResource.create_with_version(attributes) }
+
   end
 end

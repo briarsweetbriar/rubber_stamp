@@ -5,5 +5,9 @@ module ControlledVersioning
     belongs_to :version, polymorphic: true
     has_many :version_attributes, as: :version
     has_many :version_children, as: :version
+
+    def changes
+      ChangeTracker.new(self).get_changes
+    end
   end
 end

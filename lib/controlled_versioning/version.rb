@@ -17,6 +17,10 @@ class Version
     versionable.class.nested_associations
   end
 
+  def version_children
+    version.version_children
+  end
+
   def versionable_notes
     versionable.notes
   end

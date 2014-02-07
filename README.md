@@ -20,16 +20,16 @@ Options
 
 By default, ControlledVersioning will track all attributes except a model's `id`, `created_at`, and `updated_at`. If you want to specify a set of attributes to track, you can do so by passing the `versionable_attributes` argument to `acts_as_versionable`:
 
-    acts_as_versionable versionable_attributes: [:some_attribute, :some_other_attribute]
+    acts_as_versionable versionable_attributes: [:title, :author]
     
 Conversely, you can exclude specific attributes (and track everything else):
 
-    acts_as_versionable nonversionable_attributes: [:some_attribute, :some_other_attribute]
+    acts_as_versionable nonversionable_attributes: [:publication_date]
 
 Finally, if a model is nested within a parent model using `accepts_nested_attributes_for`, you can bundle its revisions with its parent's version by using `nested_within`. Pass in the parent's association name as the sole argument:
 
-    belongs_to :my_parent, class_name: "ParentModel"
-    acts_as_versionable nested_within: :my_parent
+    belongs_to :publisher, class_name: "DigitalPublisher"
+    acts_as_versionable nested_within: :publisher
 
 Tracking Users and Notes
 ------------------------
@@ -39,13 +39,13 @@ ControlledVersioning can keep track of both who contributed a revision and any n
 With users, the simplest approach is to merge the current user into the strong_params hash:
 
     def my_model_params
-      params.require(:my_model).permit(:some_attribute, some_other_attribute).merge(user: current_user)
+      params.require(:novel).permit(:title, :author).merge(user: current_user)
     end
 
 Similarly, if you want the user to leave notes, you should create a textarea for the notes in your form, then permit them in the strong_params hash:
 
     def my_model_params
-      params.require(:my_model).permit(:some_attribute, some_other_attribute, :notes)
+      params.require(:novel).permit(:title, :author, :notes)
     end
 
 And that's all you need to track contributor data and notes.
@@ -53,56 +53,78 @@ And that's all you need to track contributor data and notes.
 Usage
 -----
 
-Create versionable models as usual:
+Create versionable models with the methods `new_with_version` and `create_with_version`:
 
     def create
-      @my_model = MyModel.create(my_model_params)
+      @novel = Novel.new_with_version(novel_params)
+      @novel.save
+    end
+
+or:
+
+    def create
+      @novel = Novel.create_with_version(novel_params)
     end
 
 When you do so, ControlledVersioning will automatically clone its attributes to create an initial version. You can view this version by calling:
 
-    @my_model.initial_version
+    @novel.initial_version
 
 Versions start out as `pending`, and can be set to `accepted` and `declined`. To accept a version:
 
-    @my_model.initial_version.accept
+    @novel.initial_version.accept
 
 To decline a version:
 
-    @my_model.initial_version.decline
+    @novel.initial_version.decline
 
 When updating a versionable model, you'll need to use `submit_revision` instead of `update_attributes`:
 
-    def create
-      @my_model = MyModel.find(params[id])
-      @my_model.submit_revision(my_model_params)
+    def update
+      @novel = Novel.find(params[id])
+      @novel.submit_revision(novel_params)
     end
 
-When using `submit_revision`, your original `@my_model` will not be altered. Instead, ControlledVersioning creates a new version with the submitted revisions. You can then review this submission:
+When using `submit_revision`, your original `@novel` will not be altered. Instead, ControlledVersioning creates a new version with the submitted revisions. You can then review this submission:
 
-    @my_model.versions.pending.last
+    @novel.versions.last
 
 And either decline it:
 
-    @my_model.versions.pending.last.decline
+    @novel.versions.last.decline
 
 Or accept it:
 
-    @my_model.versions.pending.last.accept
+    @novel.versions.last.accept
 
 If you accept it, then ControlledVersioning will update the original with your revisions:
 
-    @my_model.title # => "fragments from Work in Progress"
-    @my_model.submit_revision(title: "Finnegans Wake")
-    @my_model.title # => "fragments from Work in Progress"
-    @my_model.versions.pending.last.accept
-    @my_model.title # => "Finnegans Wake"
+    @novel.title # => "fragments from Work in Progress"
+    @novel.submit_revision(title: "Finnegans Wake")
+    @novel.title # => "fragments from Work in Progress"
+    @novel.versions.pending.last.accept
+    @novel.title # => "Finnegans Wake"
+
+Examining Changes
+-----------------
+
+WARNING: This output will change drastically before 1.0.0.
+
+Before accepting or declining a revision, you'll need to examine it to ensure that the changes are up to your guidelines. You can do so with the `version.changes` method:
+
+    @novel.versions.last.changes # => { "title" => { old_value: "fragments from Work in Progress", new_value: "Finnegans Wake" }, "author" => { old_value: nil, new_value: "James Joyce" } }
+
+This also works with nested models:
+
+    @novel.versions.last.changes # => { "title" => { old_value: "fragments from Work in Progress", new_value: "Finnegans Wake" }, "publishers" => [{ id: 17, "name": { old_value: "Faber and Faber", new_value: "Farrar, Straus and Giroux" } }, { id: nil, name: { old_value: nil, new_value: "Banton Books" } }, { id: 18, maked_for_removal: true } ] }
+
+In this example, three publishers are being edited. The first has had their name changed, the second is new publisher, and the third has been marked for removal. If this revision is accepted, then the final publisher will be deleted from the database, while the second publisher is added to it.
 
 Scopes
 ------
 
 The `Version` model supports three scopes corresponding to the three states a version can be in. They are:
 
-    @my_model.versions.pending
-    @my_model.versions.accepted
-    @my_model.versions.declined
+    @novel.versions.pending
+    @novel.versions.accepted
+    @novel.versions.declined

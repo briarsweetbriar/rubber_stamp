@@ -5,10 +5,6 @@ class Revision < Version
     versionable.changed_attributes
   end
 
-  def version_children
-    version.version_children
-  end
-
   def versionable_changes(key)
     values = versionable.changes[key]
     ValueChange.new(values[0], values[1])

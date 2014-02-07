@@ -44,24 +44,26 @@ class Revision::Factory < Revision
   def build_children
     versionable_nested_associations.each do |association|
       versionable.public_send(association).each do |child|
-        build_child(child)
+        build_child(child, association)
       end
     end
   end
 
-  def build_child(child)
+  def build_child(child, association)
     if Revision::Auditor.new(child).changes_original?
-      version_child = build_version_child(child)
+      version_child = build_version_child(child, association)
       Revision::Factory.new(versionable: child, version: version_child).build
     end
   end
 
-  def build_version_child(child)
+  def build_version_child(child, association)
+    version_child = version_children.build(association_name: association)
     if child.new_record?
-      version_children.build(versionable_type: child.class.name)
+      version_child.versionable_type = child.class.name
     else
-      version_children.build(versionable: child)
+      version_child.versionable = child
     end
+    version_child
   end
 
 end

@@ -53,38 +53,7 @@ describe "ControlledVersioning" do
           r_float: 90.1)
     expect(revision.notes).to be_nil
   end
-
-  context 'has a scope that' do
-    before :each do
-      @resource = create(:versionable_resource)
-      @accepted_1 = @resource.submit_revision(r_string: "accepted 1")
-      @accepted_2 = @resource.submit_revision(r_string: "accepted 2")
-      @declined_1 = @resource.submit_revision(r_string: "declined 1")
-      @declined_2 = @resource.submit_revision(r_string: "declined 2")
-      @pending_1 = @resource.initial_version
-      @pending_2 = @resource.submit_revision(r_string: "pending 2")
-      @accepted_1.accept
-      @accepted_2.accept
-      @declined_1.decline
-      @declined_2.decline
-    end
-
-    it 'returns an array of pending versions' do
-      expect(@resource.versions.pending).to match_array(
-        [@pending_1, @pending_2])
-    end
-
-    it 'returns an array of accepted versions' do
-      expect(@resource.versions.accepted).to match_array(
-        [@accepted_1, @accepted_2])
-    end
-
-    it 'returns an array of declined versions' do
-      expect(@resource.versions.declined).to match_array(
-        [@declined_1, @declined_2])
-    end
-  end
-
+  
   context 'by default' do
     before :each do
       @resource = create(:versionable_resource)
@@ -169,7 +138,27 @@ describe "ControlledVersioning" do
 
   context 'with nested attributes' do
     before :each do
-      @resource = create(:parent_with_grand_children)
+      @resource = ParentResource.create_with_version({ r_string: "my string",
+        r_float: 3.14, child_resources_attributes: [
+          { r_string: "my string", r_float: 3.14,
+            grand_child_resources_attributes: [
+              { r_string: "my string", r_float: 3.14 },
+              { r_string: "my string", r_float: 3.14 },
+              { r_string: "my string", r_float: 3.14 }
+            ] },
+          { r_string: "my string", r_float: 3.14,
+            grand_child_resources_attributes: [
+              { r_string: "my string", r_float: 3.14 },
+              { r_string: "my string", r_float: 3.14 },
+              { r_string: "my string", r_float: 3.14 }
+            ] },
+          { r_string: "my string", r_float: 3.14,
+            grand_child_resources_attributes: [
+              { r_string: "my string", r_float: 3.14 },
+              { r_string: "my string", r_float: 3.14 },
+              { r_string: "my string", r_float: 3.14 }
+            ] }
+        ] })
     end
 
     it 'creates version children' do
@@ -210,6 +199,56 @@ describe "ControlledVersioning" do
       end
     end
 
+    context 'handles revision for multiple children' do
+      before :each do
+        @first_child_resource = @resource.child_resources[0]
+        @second_child_resource = @resource.child_resources[1]
+        @version = @resource.submit_revision(child_resources_attributes: [
+          {id: @first_child_resource.id, r_string: "new string"},
+          {id: @second_child_resource.id, r_string: "second new string"}
+        ])
+      end
+
+      it 'by creating versions for the full family' do
+        expect(@version.version_children.length).to eq 2
+        first_changed_attribute = @version.version_children.
+                            find_by(versionable: @first_child_resource).
+                            version_attributes.find_by(name: "r_string")
+        second_changed_attribute = @version.version_children.
+                            find_by(versionable: @second_child_resource).
+                            version_attributes.find_by(name: "r_string")
+        expect(first_changed_attribute.new_value).to eq "new string"
+        expect(first_changed_attribute.old_value).to eq "my string"
+        expect(second_changed_attribute.new_value).to eq "second new string"
+        expect(second_changed_attribute.old_value).to eq "my string"
+      end
+
+      it 'by updating all children if its revisions are approved' do
+        @version.accept
+        @first_child_resource.reload
+        @second_child_resource.reload
+        expect(@first_child_resource.r_string).to eq "new string"
+        expect(@second_child_resource.r_string).to eq "second new string"
+      end
+
+      it 'returns a hash of changed attributes for the full family' do
+        expect(@version.changes).to eq "child_resources" => [
+          { id: @second_child_resource.id,
+            "r_string" => {
+              new_value: "second new string",
+              old_value: "my string"
+            }
+          },
+          { id: @first_child_resource.id,
+            "r_string" => {
+              new_value: "new string",
+              old_value: "my string"
+            }
+          }
+        ]
+      end
+    end
+
     context 'handles revision for deeply nested children' do
       before :each do
         @first_child_resource = @resource.child_resources[0]
@@ -238,6 +277,15 @@ describe "ControlledVersioning" do
         @first_grand_child_resource.reload
         expect(@first_grand_child_resource.r_string).to eq "new string"
       end
+
+      it 'returns a hash of changed attributes for the full family' do
+        expect(@version.changes).to eq "child_resources" => [{ id:
+          @first_child_resource.id, "grand_child_resources" => [{ id:
+            @first_grand_child_resource.id, "r_string" => { new_value:
+              "new string", old_value: "my string" }
+            }]
+          }]
+      end
     end
 
     context 'handles new children' do
@@ -263,6 +311,14 @@ describe "ControlledVersioning" do
         @version.accept
         @resource.reload
         expect(@resource.child_resources.find_by(r_float: 14.0)).to_not be_nil
+      end
+
+      it 'returns a hash of attributes for new children' do
+        expect(@version.changes).to eq "child_resources" => [{ id:
+          nil, "r_float" => { new_value: "14.0", old_value: nil },
+          "parent_resource_id" => { new_value: @resource.id.to_s,
+            old_value: nil}
+        }]
       end
     end
 
@@ -293,6 +349,12 @@ describe "ControlledVersioning" do
         @version.accept
         @resource.reload
         expect(@resource.child_resources.length).to eq 2
+      end
+
+      it 'returns a hash noting marked children' do
+        expect(@version.changes).to eq "child_resources" => [{ id:
+          @first_child_resource.id, marked_for_removal: true
+        }]
       end
     end
   end

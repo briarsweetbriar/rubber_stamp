@@ -15,7 +15,7 @@ FactoryGirl.define do
             children_count 3
         end
 
-        after(:create) do |parent, evaluator|
+        before(:create) do |parent, evaluator|
             create_list(:child_resource, evaluator.children_count, parent_resource: parent)
         end
     end
@@ -25,11 +25,13 @@ FactoryGirl.define do
             children_count 3
         end
 
-        after(:create) do |parent, evaluator|
+        before(:create) do |parent, evaluator|
             create_list(:child_with_grand_children, evaluator.children_count,
                 parent_resource: parent)
         end
     end
+
+    initialize_with { ParentResource.create_with_version(attribute_lists) }
 
   end
 end

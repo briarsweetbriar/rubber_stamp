@@ -3,6 +3,8 @@ require "controlled_versioning/engine"
 # Core
 require "controlled_versioning/version"
 
+require "controlled_versioning/change_tracker"
+
 require "controlled_versioning/initial_version"
 require "controlled_versioning/initial_version/factory"
 
@@ -44,8 +46,6 @@ module ControlledVersioning
 
         attr_accessor :user, :notes
 
-        after_create :create_initial_version
-
         cattr_accessor :nested_within
         self.nested_within = options[:nested_within]
 
@@ -68,6 +68,19 @@ module ControlledVersioning
         self.versionable_attribute_names = options[:versionable_attributes] ||
                                            set_versionable_attribute_names(
                                            options[:nonversionable_attributes])
+        
+        def new_with_version(attributes)
+          resource = self.new(attributes)
+          return resource.errors if resource.invalid?
+          resource.build_initial_version
+          resource
+        end
+
+        def create_with_version(attributes)
+          resource = new_with_version(attributes)
+          resource.save
+          resource
+        end
       end
     end
 
@@ -80,6 +93,11 @@ module ControlledVersioning
         versionable_attributes = self.versionable_attribute_names
         ArrayConverter.to_s!(versionable_attributes)
         self.attributes.slice(*versionable_attributes)
+      end
+
+      def build_initial_version
+        version = versions.build(initial: true, notes: notes, user: user)
+        InitialVersion::Factory.new(versionable: self, version: version).build
       end
 
       def initial_version
@@ -105,10 +123,6 @@ module ControlledVersioning
         end
       end
 
-      private
-      def create_initial_version
-        InitialVersion::Factory.new(self).build
-      end
     end
   end
 end
