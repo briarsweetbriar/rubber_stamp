@@ -158,3 +158,37 @@ The `Version` model supports three scopes corresponding to the three states a ve
     @novel.versions.pending
     @novel.versions.accepted
     @novel.versions.declined
+
+Custom Accept and Decline Handlers
+----------------------------------
+
+Aside from setting internal metadata, ControlledVersioning does nothing when a version is declined--or when an initial version is accepted. The only time it responds to acceptance is when a revision is accepted, at which point it updates the versionable.
+
+Most likely, you'll want extra handling in these situations. Perhaps you want to award a user reputation points for submitting an acceptable resource. Perhaps you want a resource to be hidden until after it has been accepted. Perhaps you want to destroy resources that are declined. You can do all of these things with custom handlers.
+
+There are six handlers in total:
+
+    when_accepting_anything
+    when_accepting_an_initial_version
+    when_accepting_a_revision
+    when_declining_anything
+    when_declining_an_initial_version
+    when_declining_a_revision
+
+To implement these custom handlers, just create a public method with its name inside of the versionable model. For instance:
+
+    class Novel < ActiveRecord::Base
+      acts_as_versionable
+
+      def when_accepting_anything
+        increment(:revisions_count)
+      end
+
+      def when_accepting_an_initial_version
+        update_attribute(:publicly_viewable, true)
+      end
+
+      def when_declining_an_initial_version
+        self.destroy
+      end
+    end

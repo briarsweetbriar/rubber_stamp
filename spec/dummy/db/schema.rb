@@ -88,6 +88,26 @@ ActiveRecord::Schema.define(version: 20140206204920) do
     t.datetime "updated_at"
   end
 
+  create_table "handler_resources", force: true do |t|
+    t.boolean  "r_boolean"
+    t.date     "r_date"
+    t.datetime "r_datetime"
+    t.decimal  "r_decimal"
+    t.float    "r_float"
+    t.integer  "r_integer"
+    t.string   "r_string"
+    t.text     "r_text"
+    t.time     "r_time"
+    t.integer  "accept_count",             default: 0,     null: false
+    t.integer  "decline_count",            default: 0,     null: false
+    t.integer  "accepted_revisions_count", default: 0,     null: false
+    t.integer  "declined_revisions_count", default: 0,     null: false
+    t.boolean  "accepted",                 default: false, null: false
+    t.boolean  "declined",                 default: false, null: false
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "nonversionable_resources", force: true do |t|
     t.boolean  "r_boolean"
     t.date     "r_date"

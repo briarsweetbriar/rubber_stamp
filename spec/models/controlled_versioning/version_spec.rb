@@ -88,6 +88,56 @@ describe ControlledVersioning::Version do
     end
   end
 
+  context 'allows for custom handling of' do
+    before :each do
+      @resource = create(:handler_resource)
+      @revision_one = @resource.submit_revision(r_string: "first revision")
+      @revision_two = @resource.submit_revision(r_string: "second revisions")
+    end
+
+    context 'acceptances of' do
+      before :each do
+        @resource.initial_version.accept
+        @revision_one.accept
+        @revision_two.accept
+        @resource.reload
+      end
+
+      it 'any kind' do
+        expect(@resource.accept_count).to eq 3
+      end
+
+      it 'initial versions' do
+        expect(@resource.accepted).to be_true
+      end
+
+      it 'revisions' do
+        expect(@resource.accepted_revisions_count).to eq 2
+      end
+    end
+
+    context 'declines of' do
+      before :each do
+        @resource.initial_version.decline
+        @revision_one.decline
+        @revision_two.decline
+        @resource.reload
+      end
+
+      it 'any kind' do
+        expect(@resource.decline_count).to eq 3
+      end
+
+      it 'initial versions' do
+        expect(@resource.declined).to be_true
+      end
+
+      it 'revisions' do
+        expect(@resource.declined_revisions_count).to eq 2
+      end
+    end
+  end  
+
   context 'has a scope that' do
     before :each do
       @resource = create(:versionable_resource)

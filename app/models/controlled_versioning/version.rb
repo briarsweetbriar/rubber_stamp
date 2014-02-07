@@ -13,11 +13,19 @@ module ControlledVersioning
       if pending?
         Revision::Publisher.new(self).accept_revision unless initial?
         update_attributes(pending: false, accepted: true)
+        versionable.try(:when_accepting_anything)
+        versionable.try(:when_accepting_an_initial_version) if initial?
+        versionable.try(:when_accepting_a_revision) unless initial?
       end
     end
 
     def decline
-      update_attributes(pending: false, declined: true) if pending?
+      if pending?
+        update_attributes(pending: false, declined: true)
+        versionable.try(:when_declining_anything)
+        versionable.try(:when_declining_an_initial_version) if initial?
+        versionable.try(:when_declining_a_revision) unless initial?
+      end
     end
 
     def revisions
