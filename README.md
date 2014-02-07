@@ -111,8 +111,8 @@ Examining Changes
 Before accepting or declining a revision, you'll need to examine it to ensure that the changes are up to your guidelines. You can do so with the `version.revisions` method:
 
     @novel.submit_revisions(title: "Finnegans Wake")
-    this_revision = @novel.versions.last
-    changed_attributes = this_revision.revisions.attributes
+    version = @novel.versions.last
+    changed_attributes = version.revisions.attributes
     changed_attributes.first.name # => "title"
     changed_attributes.first.old_value # => "fragments from Work in Progress"
     changed_attributes.first.new_value # => "Finnegans Wake"
@@ -130,8 +130,8 @@ In addition to an array of attributes, `revisions` can return an array of nested
     @novel.submit_revisions(characters_attributes: [{ id: 7, name: "Shaun" },
       { name: "Shem" },
       { id: 8, _destroy: true }])
-    this_revision = @novel.versions.last
-    changed_children = this_revision.revisions.children
+    version = @novel.versions.last
+    changed_children = version.revisions.children
 
     changed_children[0].attributes.first.name # => "name"
     changed_children[0].attributes.first.old_value # => "Stanislaus"
