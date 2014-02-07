@@ -1,0 +1,4 @@
+en:
+ errors:
+    messages:
+      no_revisions_made: "We didn't find any changes. Please make sure you've revised at least one attribute."

@@ -10,14 +10,9 @@ class Revision::Factory < Revision
 
   def build
     versionable.assign_attributes(suggested_attributes)
-    if versionable.invalid?
-      versionable.errors
-    elsif !Revision::Auditor.new(versionable).changes_original?
-      versionable.errors[:base] << I18n.t("errors.messages.no_revisions_made")
-      versionable.errors
-    else
-      build_parent
-    end
+    versionable.valid?
+    validate_presence_of_changes
+    versionable.errors.present? ? versionable.errors : build_parent
   end
 
   def build_associations
@@ -27,6 +22,12 @@ class Revision::Factory < Revision
   end
 
   private
+  def validate_presence_of_changes
+    if !Revision::Auditor.new(versionable).changes_original?
+      versionable.errors[:base] << I18n.t("errors.messages.no_revisions_made")
+    end
+  end
+
   def build_parent
     self.version = versionable.versions.build
     version.notes = versionable_notes

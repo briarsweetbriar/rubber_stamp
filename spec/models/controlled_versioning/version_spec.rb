@@ -73,9 +73,9 @@ describe ControlledVersioning::Version do
       changed_child = version.revisions.children.first
       changed_attribute = changed_child.attributes.first
       expect(changed_child.new?).to be_true
-      expect(changed_attribute.name).to eq "r_float"
+      expect(changed_attribute.name).to eq "r_float" || "parent_id"
       expect(changed_attribute.old_value).to be_nil
-      expect(changed_attribute.new_value).to eq "3.14"
+      expect(changed_attribute.new_value).to eq "3.14" || @resource.id
     end
 
     it 'marked children' do
