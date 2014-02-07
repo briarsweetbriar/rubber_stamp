@@ -108,30 +108,30 @@ If you accept it, then ControlledVersioning will update the original with your r
 Examining Changes
 -----------------
 
-Before accepting or declining a revision, you'll need to examine it to ensure that the changes are up to your guidelines. You can do so with the `version.versionable_changes` method:
+Before accepting or declining a revision, you'll need to examine it to ensure that the changes are up to your guidelines. You can do so with the `version.revisions` method:
 
     @novel.submit_revisions(title: "Finnegans Wake")
     this_revision = @novel.versions.last
-    changed_attributes = this_revision.versionable_changes.attributes
+    changed_attributes = this_revision.revisions.attributes
     changed_attributes.first.name # => "title"
     changed_attributes.first.old_value # => "fragments from Work in Progress"
     changed_attributes.first.new_value # => "Finnegans Wake"
 
-Here we see that `versionable_changes` returns an array of changed attributes. Each of these attributes can be queried for their `name`, `old_value`, and `new_value`. You could use this array to create a table of changes:
+Here we see that `revisions` returns an array of changed attributes. Each of these attributes can be queried for their `name`, `old_value`, and `new_value`. You could use this array to create a table of changes:
 
-    <% version.versionable_changes.attributes.each do |attr| %>
+    <% version.revisions.attributes.each do |attr| %>
       <th><%= attr.name %></th>
       <td><%= attr.old_value %></td>
       <td><%= attr.new_value %></td>
     <% end %>
 
-In addition to an array of attributes, `versionable_changes` can return an array of nested resources that have been altered:
+In addition to an array of attributes, `revisions` can return an array of nested resources that have been altered:
 
     @novel.submit_revisions(characters_attributes: [{ id: 7, name: "Shaun" },
       { name: "Shem" },
       { id: 8, _destroy: true }])
     this_revision = @novel.versions.last
-    changed_children = this_revision.versionable_changes.children
+    changed_children = this_revision.revisions.children
 
     changed_children[0].attributes.first.name # => "name"
     changed_children[0].attributes.first.old_value # => "Stanislaus"

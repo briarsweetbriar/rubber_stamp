@@ -6,7 +6,7 @@ module ControlledVersioning
     has_many :version_attributes, as: :version
     has_many :version_children, as: :version
 
-    def versionable_changes
+    def revisions
       ChangeTracker.new(self)
     end
 

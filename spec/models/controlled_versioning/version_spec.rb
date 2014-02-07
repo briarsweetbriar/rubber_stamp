@@ -29,7 +29,7 @@ describe ControlledVersioning::Version do
 
     it 'changed attributes' do
       version = @resource.submit_revision(r_string: "new string")
-      changed_attribute = version.versionable_changes.attributes.first
+      changed_attribute = version.revisions.attributes.first
       expect(changed_attribute.name).to eq "r_string"
       expect(changed_attribute.old_value).to eq "my string"
       expect(changed_attribute.new_value).to eq "new string"
@@ -40,7 +40,7 @@ describe ControlledVersioning::Version do
       version = @resource.submit_revision(child_resources_attributes: [
         {id: first_child_resource.id, r_string: "new string"}
       ])
-      changed_child = version.versionable_changes.children.first
+      changed_child = version.revisions.children.first
       changed_attribute = changed_child.attributes.first
       expect(changed_child.name).to eq "child_resources"
       expect(changed_attribute.name).to eq "r_string"
@@ -57,7 +57,7 @@ describe ControlledVersioning::Version do
           {id: first_grand_child_resource.id, r_string: "new string"}
         ]}
       ])
-      changed_child = version.versionable_changes.children.first
+      changed_child = version.revisions.children.first
       changed_grand_child = changed_child.children.first
       changed_attribute = changed_grand_child.attributes.first
       expect(changed_grand_child.name).to eq "grand_child_resources"
@@ -70,7 +70,7 @@ describe ControlledVersioning::Version do
       version = @resource.submit_revision(child_resources_attributes: [
         {r_float: 3.14}
       ])
-      changed_child = version.versionable_changes.children.first
+      changed_child = version.revisions.children.first
       changed_attribute = changed_child.attributes.first
       expect(changed_child.new?).to be_true
       expect(changed_attribute.name).to eq "r_float"
@@ -83,7 +83,7 @@ describe ControlledVersioning::Version do
       version = @resource.submit_revision(child_resources_attributes: [
         {id: first_child_resource.id, _destroy: true}
       ])
-      changed_child = version.versionable_changes.children.first
+      changed_child = version.revisions.children.first
       expect(changed_child.marked_for_removal?).to be_true
     end
   end

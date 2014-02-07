@@ -20,7 +20,7 @@ module ControlledVersioning
       update_attributes(pending: false, declined: true) if pending?
     end
 
-    def versionable_changes
+    def revisions
       ChangeTracker.new(self)
     end
 
