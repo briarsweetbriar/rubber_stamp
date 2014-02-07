@@ -20,8 +20,12 @@ module ControlledVersioning
       update_attributes(pending: false, declined: true) if pending?
     end
 
-    def changes
-      ChangeTracker.new(self).get_changes
+    def versionable_changes
+      ChangeTracker.new(self)
+    end
+
+    def is_a_child?
+      false
     end
   end
 end

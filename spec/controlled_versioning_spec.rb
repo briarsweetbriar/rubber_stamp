@@ -65,8 +65,8 @@ describe "ControlledVersioning" do
     end
 
     it 'returns the initial version' do
-      @resource.versions.create
-      @resource.versions.create
+      @resource.submit_revision(r_string: "new string")
+      @resource.submit_revision(r_float: 63.5)
       expect(@resource.initial_version).to eq(
         @resource.versions.find_by(initial: true))
     end
@@ -230,23 +230,6 @@ describe "ControlledVersioning" do
         expect(@first_child_resource.r_string).to eq "new string"
         expect(@second_child_resource.r_string).to eq "second new string"
       end
-
-      it 'returns a hash of changed attributes for the full family' do
-        expect(@version.changes).to eq "child_resources" => [
-          { id: @second_child_resource.id,
-            "r_string" => {
-              new_value: "second new string",
-              old_value: "my string"
-            }
-          },
-          { id: @first_child_resource.id,
-            "r_string" => {
-              new_value: "new string",
-              old_value: "my string"
-            }
-          }
-        ]
-      end
     end
 
     context 'handles revision for deeply nested children' do
@@ -277,15 +260,6 @@ describe "ControlledVersioning" do
         @first_grand_child_resource.reload
         expect(@first_grand_child_resource.r_string).to eq "new string"
       end
-
-      it 'returns a hash of changed attributes for the full family' do
-        expect(@version.changes).to eq "child_resources" => [{ id:
-          @first_child_resource.id, "grand_child_resources" => [{ id:
-            @first_grand_child_resource.id, "r_string" => { new_value:
-              "new string", old_value: "my string" }
-            }]
-          }]
-      end
     end
 
     context 'handles new children' do
@@ -311,14 +285,6 @@ describe "ControlledVersioning" do
         @version.accept
         @resource.reload
         expect(@resource.child_resources.find_by(r_float: 14.0)).to_not be_nil
-      end
-
-      it 'returns a hash of attributes for new children' do
-        expect(@version.changes).to eq "child_resources" => [{ id:
-          nil, "r_float" => { new_value: "14.0", old_value: nil },
-          "parent_resource_id" => { new_value: @resource.id.to_s,
-            old_value: nil}
-        }]
       end
     end
 
@@ -349,12 +315,6 @@ describe "ControlledVersioning" do
         @version.accept
         @resource.reload
         expect(@resource.child_resources.length).to eq 2
-      end
-
-      it 'returns a hash noting marked children' do
-        expect(@version.changes).to eq "child_resources" => [{ id:
-          @first_child_resource.id, marked_for_removal: true
-        }]
       end
     end
   end

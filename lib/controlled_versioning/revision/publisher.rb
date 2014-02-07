@@ -21,8 +21,8 @@ class Revision::Publisher < Revision
   end
 
   def create_versionable
-    version.versionable = version.versionable_type.constantize.
-                          create(new_attributes)
+    version.versionable = version.parent.versionable.public_send(
+                          version.association_name).create(new_attributes)
   end
 
   def update_versionable

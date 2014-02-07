@@ -4,6 +4,8 @@ require "controlled_versioning/engine"
 require "controlled_versioning/version"
 
 require "controlled_versioning/change_tracker"
+require "controlled_versioning/change_tracker/attribute"
+require "controlled_versioning/change_tracker/child"
 
 require "controlled_versioning/initial_version"
 require "controlled_versioning/initial_version/factory"
@@ -109,18 +111,10 @@ module ControlledVersioning
       end
 
       def submit_revision(suggested_attributes)
-        assign_attributes(suggested_attributes)
-        if invalid?
-          errors
-        elsif !Revision::Auditor.new(self).changes_original?
-          errors[:base] << I18n.t("errors.messages.no_revisions_made")
-          errors
-        else
-          version = versions.build
-          Revision::Factory.new(versionable: self, version: version).build
-          version.save
-          version
-        end
+        Revision::Factory.new(
+          versionable: self,
+          suggested_attributes: suggested_attributes
+        ).build_parent
       end
 
     end

@@ -108,17 +108,47 @@ If you accept it, then ControlledVersioning will update the original with your r
 Examining Changes
 -----------------
 
-WARNING: This output will change drastically before 1.0.0.
+Before accepting or declining a revision, you'll need to examine it to ensure that the changes are up to your guidelines. You can do so with the `version.versionable_changes` method:
 
-Before accepting or declining a revision, you'll need to examine it to ensure that the changes are up to your guidelines. You can do so with the `version.changes` method:
+    @novel.submit_revisions(title: "Finnegans Wake")
+    this_revision = @novel.versions.last
+    changed_attributes = this_revision.versionable_changes.attributes
+    changed_attributes.first.name # => "title"
+    changed_attributes.first.old_value # => "fragments from Work in Progress"
+    changed_attributes.first.new_value # => "Finnegans Wake"
 
-    @novel.versions.last.changes # => { "title" => { old_value: "fragments from Work in Progress", new_value: "Finnegans Wake" }, "author" => { old_value: nil, new_value: "James Joyce" } }
+Here we see that `versionable_changes` returns an array of changed attributes. Each of these attributes can be queried for their `name`, `old_value`, and `new_value`. You could use this array to create a table of changes:
 
-This also works with nested models:
+    <% version.versionable_changes.attributes.each do |attr| %>
+      <th><%= attr.name %></th>
+      <td><%= attr.old_value %></td>
+      <td><%= attr.new_value %></td>
+    <% end %>
 
-    @novel.versions.last.changes # => { "title" => { old_value: "fragments from Work in Progress", new_value: "Finnegans Wake" }, "publishers" => [{ id: 17, "name": { old_value: "Faber and Faber", new_value: "Farrar, Straus and Giroux" } }, { id: nil, name: { old_value: nil, new_value: "Banton Books" } }, { id: 18, maked_for_removal: true } ] }
+In addition to an array of attributes, `versionable_changes` can return an array of nested resources that have been altered:
 
-In this example, three publishers are being edited. The first has had their name changed, the second is new publisher, and the third has been marked for removal. If this revision is accepted, then the final publisher will be deleted from the database, while the second publisher is added to it.
+    @novel.submit_revisions(characters_attributes: [{ id: 7, name: "Shaun" },
+      { name: "Shem" },
+      { id: 8, _destroy: true }])
+    this_revision = @novel.versions.last
+    changed_children = this_revision.versionable_changes.children
+
+    changed_children[0].attributes.first.name # => "name"
+    changed_children[0].attributes.first.old_value # => "Stanislaus"
+    changed_children[0].attributes.first.new_value # => "Shaun"
+    
+    changed_children[1].attributes.first.name # => "name"
+    changed_children[1].attributes.first.old_value # => nil
+    changed_children[1].attributes.first.new_value # => "Shem"
+    changed_children[1].new? # => true
+    
+    changed_children[2].marked_for_removal? # => true
+
+In this example, three children are being edited. The first has had his name changed, the second is a new addition, and the third is being removed from the family. If this revision is accepted, then the final child will be deleted from the database, while the second is added to it.
+
+You'll also notice that each child contains an `attributes` hash, just like its parent. They also contain a `children` hash, allowing you to explore deeply nested associations. If you wanted, you could create a recursive table that would represent all changes (on every level) that a version suggests.
+
+Finally, there are two convenience booleans. The first allows you to find out if a child is `new?`. The second checks if a child is `marked_for_removal?`.
 
 Scopes
 ------

@@ -1,28 +1,43 @@
 class Revision::Factory < Revision
 
-  attr_reader :versionable, :version
+  attr_reader :versionable, :suggested_attributes
+  attr_accessor :version
   def initialize(args)
     @versionable = args[:versionable]
     @version = args[:version]
+    @suggested_attributes = args[:suggested_attributes]
   end
 
-  def build
+  def build_parent
+    versionable.assign_attributes(suggested_attributes)
+    if versionable.invalid?
+      versionable.errors
+    elsif !Revision::Auditor.new(versionable).changes_original?
+      versionable.errors[:base] << I18n.t("errors.messages.no_revisions_made")
+      versionable.errors
+    else
+      self.version = versionable.versions.build
+      add_notes
+      build_associations
+      version.save
+      version
+    end
+  end
+
+  def build_associations
     mark_for_removal
-    add_notes
     build_attributes
     build_children
   end
 
   private
-  def mark_for_removal
-    version.marked_for_removal = true if versionable.marked_for_destruction?
+  def add_notes
+    version.notes = versionable_notes
+    version.user = versionable_user
   end
 
-  def add_notes
-    unless versionable_is_a_nested_association?
-      version.notes = versionable_notes
-      version.user = versionable_user
-    end
+  def mark_for_removal
+    version.marked_for_removal = true if versionable.marked_for_destruction?
   end
 
   def build_attributes
@@ -52,17 +67,16 @@ class Revision::Factory < Revision
   def build_child(child, association)
     if Revision::Auditor.new(child).changes_original?
       version_child = build_version_child(child, association)
-      Revision::Factory.new(versionable: child, version: version_child).build
+      Revision::Factory.new(
+        versionable: child,
+        version: version_child
+      ).build_associations
     end
   end
 
   def build_version_child(child, association)
     version_child = version_children.build(association_name: association)
-    if child.new_record?
-      version_child.versionable_type = child.class.name
-    else
-      version_child.versionable = child
-    end
+    version_child.versionable = child unless child.new_record?
     version_child
   end
 
