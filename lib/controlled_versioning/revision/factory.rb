@@ -8,7 +8,7 @@ class Revision::Factory < Revision
     @suggested_attributes = args[:suggested_attributes]
   end
 
-  def build_parent
+  def build
     versionable.assign_attributes(suggested_attributes)
     if versionable.invalid?
       versionable.errors
@@ -16,11 +16,7 @@ class Revision::Factory < Revision
       versionable.errors[:base] << I18n.t("errors.messages.no_revisions_made")
       versionable.errors
     else
-      self.version = versionable.versions.build
-      add_notes
-      build_associations
-      version.save
-      version
+      build_parent
     end
   end
 
@@ -31,9 +27,13 @@ class Revision::Factory < Revision
   end
 
   private
-  def add_notes
+  def build_parent
+    self.version = versionable.versions.build
     version.notes = versionable_notes
     version.user = versionable_user
+    build_associations
+    version.save
+    version
   end
 
   def mark_for_removal

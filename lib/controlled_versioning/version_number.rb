@@ -1,3 +1,3 @@
 module ControlledVersioning
-  VERSION_NUMBER = "0.9.0"
+  VERSION_NUMBER = "0.9.1"
 end

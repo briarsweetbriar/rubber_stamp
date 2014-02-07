@@ -114,7 +114,7 @@ module ControlledVersioning
         Revision::Factory.new(
           versionable: self,
           suggested_attributes: suggested_attributes
-        ).build_parent
+        ).build
       end
 
     end
