@@ -11,9 +11,10 @@ Installation
 ------------
 
  1. Add ControlledVersioning to your gemfile: `gem 'controlled_versioning'`
- 2. Run this in your app folder: `rails generate controlled_versioning:install:migrations`
- 3. Run your migrations: `rake db:migrate`
- 4. Add `acts_as_versionable` to the models you want to have controlled versioning
+ 2. Run bundler: `bundle install`
+ 3. Run this in your app folder: `rails generate controlled_versioning:install:migrations`
+ 4. Run your migrations: `rake db:migrate`
+ 5. Add `acts_as_versionable` to the models you want to have controlled versioning
  
 Options
 -------
@@ -192,3 +193,28 @@ To implement these custom handlers, just create a public method with its name in
         self.destroy
       end
     end
+
+Issues
+------
+
+ControlledVersioning is still very young, and both its functionality and its documentation are bound to be lacking. If you're having trouble with something, feel free to open an issue.
+
+Contributing
+------------
+
+Please! Feel free to send us a pull request. Test new features via Rspec, and try to keep your code simple and readable. Ideally, we'll keep that Code Climate in the green.
+
+Contributors
+------------
+
+Timothy Baron
+
+Alternatives
+------------
+
+If you don't need the ability to accept or decline content, I'd recommend going with [PaperTrail](https://github.com/airblade/paper_trail), instead. It has a ton of features, as well as support for non-Rails frameworks.
+
+License
+-------
+
+Released under the MIT license.
