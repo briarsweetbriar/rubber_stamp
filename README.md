@@ -12,7 +12,7 @@ Installation
 
  1. Add ControlledVersioning to your gemfile: `gem 'controlled_versioning'`
  2. Run bundler: `bundle install`
- 3. Run this in your app folder: `rails generate controlled_versioning:install:migrations`
+ 3. Run this in your app folder: `rake controlled_versioning:install:migrations`
  4. Run your migrations: `rake db:migrate`
  5. Add `acts_as_versionable` to the models you want to have controlled versioning
  
@@ -165,31 +165,42 @@ Custom Accept and Decline Handlers
 
 Aside from setting internal metadata, ControlledVersioning does nothing when a version is declined--or when an initial version is accepted. The only time it responds to acceptance is when a revision is accepted, at which point it updates the versionable.
 
-Most likely, you'll want extra handling in these situations. Perhaps you want to award a user reputation points for submitting an acceptable resource. Perhaps you want a resource to be hidden until after it has been accepted. Perhaps you want to destroy resources that are declined. You can do all of these things with custom handlers.
+Most likely, you'll want extra handling in these situations. Perhaps you want to award a user reputation points for submitting an acceptable resource. Perhaps you want a resource to be hidden until after it has been accepted. Perhaps you want to destroy resources that are declined. You can do all of these things with custom handlers, which function a lot like Rails callback methods.
 
-There are six handlers in total:
+There are nine handlers in total:
 
-    when_accepting_anything
-    when_accepting_an_initial_version
-    when_accepting_a_revision
-    when_declining_anything
-    when_declining_an_initial_version
-    when_declining_a_revision
+    after_creating_anything
+    after_creating_an_initial_version
+    after_creating_a_revision
+
+    after_accepting_anything
+    after_accepting_an_initial_version
+    after_accepting_a_revision
+
+    after_declining_anything
+    after_declining_an_initial_version
+    after_declining_a_revision
 
 To implement these custom handlers, just create a public method with its name inside of the versionable model. For instance:
 
     class Novel < ActiveRecord::Base
       acts_as_versionable
 
-      def when_accepting_anything
+      def after_creating_an_initial_version
+        AdminMailer.new_novel(self).deliver
+      end
+
+      def after_accepting_anything
         increment(:revisions_count)
+        UserMailer.submission_accepted(self).deliver
       end
 
-      def when_accepting_an_initial_version
+      def after_accepting_an_initial_version
         update_attribute(:publicly_viewable, true)
+        UserMailer.revision_accepted(self).deliver
       end
 
-      def when_declining_an_initial_version
+      def after_declining_an_initial_version
         self.destroy
       end
     end
