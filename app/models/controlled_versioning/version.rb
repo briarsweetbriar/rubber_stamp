@@ -9,24 +9,26 @@ module ControlledVersioning
     scope :accepted, -> { where(accepted: true) }
     scope :declined, -> { where(declined: true) }
 
-    after_create :run_user_generated_callbacks
+    after_create :run_user_generated_create_callbacks
 
     def accept
       if pending?
+        versionable.reload
         Revision::Publisher.new(self).accept_revision unless initial?
         update_attributes(pending: false, accepted: true)
-        versionable.try(:after_accepting_anything)
-        versionable.try(:after_accepting_an_initial_version) if initial?
-        versionable.try(:after_accepting_a_revision) unless initial?
+        trigger_callbacks(:general_accepting_callbacks)
+        trigger_callbacks(:initial_accepting_callbacks) if initial?
+        trigger_callbacks(:revision_accepting_callbacks) unless initial?
       end
     end
 
     def decline
       if pending?
+        versionable.reload
         update_attributes(pending: false, declined: true)
-        versionable.try(:after_declining_anything)
-        versionable.try(:after_declining_an_initial_version) if initial?
-        versionable.try(:after_declining_a_revision) unless initial?
+        trigger_callbacks(:general_declining_callbacks)
+        trigger_callbacks(:initial_declining_callbacks) if initial?
+        trigger_callbacks(:revision_declining_callbacks) unless initial?
       end
     end
 
@@ -39,10 +41,17 @@ module ControlledVersioning
     end
 
     private
-    def run_user_generated_callbacks
-      versionable.try(:after_creating_anything)
-      versionable.try(:after_creating_an_initial_version) if initial?
-      versionable.try(:after_creating_a_revision) unless initial?
+    def run_user_generated_create_callbacks
+      trigger_callbacks(:general_creating_callbacks)
+      trigger_callbacks(:initial_creating_callbacks) if initial?
+      trigger_callbacks(:revision_creating_callbacks) unless initial?
+    end
+
+    def trigger_callbacks(type)
+      if versionable.class.respond_to?(type)
+        callbacks = versionable.class.send(type)
+        callbacks.each { |callback| versionable.send(callback) }
+      end
     end
   end
 end

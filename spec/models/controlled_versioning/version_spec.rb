@@ -95,6 +95,24 @@ describe ControlledVersioning::Version do
       @revision_two = @resource.submit_revision(r_string: "second revisions")
     end
 
+    context 'creations of' do
+      before :each do
+        @resource.reload
+      end
+
+      it 'any kind' do
+        expect(@resource.create_count).to eq 3
+      end
+
+      it 'initial versions' do
+        expect(@resource.has_been_created).to be_true
+      end
+
+      it 'revisions' do
+        expect(@resource.created_revisions_count).to eq 2
+      end
+    end
+
     context 'acceptances of' do
       before :each do
         @resource.initial_version.accept

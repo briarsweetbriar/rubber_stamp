@@ -98,10 +98,13 @@ ActiveRecord::Schema.define(version: 20140206204920) do
     t.string   "r_string"
     t.text     "r_text"
     t.time     "r_time"
+    t.integer  "create_count",             default: 0,     null: false
     t.integer  "accept_count",             default: 0,     null: false
     t.integer  "decline_count",            default: 0,     null: false
+    t.integer  "created_revisions_count",  default: 0,     null: false
     t.integer  "accepted_revisions_count", default: 0,     null: false
     t.integer  "declined_revisions_count", default: 0,     null: false
+    t.boolean  "has_been_created",         default: false, null: false
     t.boolean  "accepted",                 default: false, null: false
     t.boolean  "declined",                 default: false, null: false
     t.datetime "created_at"

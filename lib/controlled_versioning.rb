@@ -31,6 +31,27 @@ module ControlledVersioning
 
         send :include, InstanceMethods
 
+        def define_callbacks(*types)
+          types.each { |type| define_callback(type) }
+        end
+
+        def define_callback(type)
+          define_singleton_method("after_#{type}_a_version") do |*args|
+            options = args.extract_options!
+            options.merge!(only: :general) if options[:only].blank?
+            register_callback_methods(type, args, options)
+          end
+        end
+
+        def register_callback_methods(type, args, options)
+          restriction = options[:only].to_s
+          define_singleton_method("#{restriction}_#{type}_callbacks") do
+            args
+          end
+        end
+
+        define_callbacks :creating, :accepting, :declining
+
         def set_versionable_attribute_names(nonversionables)
           nonversionables = [] unless nonversionables.present?
           ArrayConverter.to_s!(nonversionables)

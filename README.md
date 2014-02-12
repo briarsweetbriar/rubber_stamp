@@ -160,50 +160,30 @@ The `Version` model supports three scopes corresponding to the three states a ve
     @novel.versions.accepted
     @novel.versions.declined
 
-Custom Accept and Decline Handlers
-----------------------------------
+Version Callbacks
+-----------------
 
-Aside from setting internal metadata, ControlledVersioning does nothing when a version is declined--or when an initial version is accepted. The only time it responds to acceptance is when a revision is accepted, at which point it updates the versionable.
+Aside from setting internal metadata, ControlledVersioning does nothing when a version is declined--or when an initial version is accepted. The only time it does something is when a revision is accepted, at which point it updates the versionable.
 
-Most likely, you'll want extra handling in these situations. Perhaps you want to award a user reputation points for submitting an acceptable resource. Perhaps you want a resource to be hidden until after it has been accepted. Perhaps you want to destroy resources that are declined. You can do all of these things with custom handlers, which function a lot like Rails callback methods.
+Most likely, you'll want extra handling in these situations. Perhaps you want to award a user reputation points for submitting an acceptable resource. Perhaps you want a resource to be hidden until it has been accepted. Perhaps you want to destroy resources that are declined. You can do all of these things with version callbacks, which function a lot like Rails's baked-in callbacks.
 
-There are nine handlers in total:
+There are three callbacks in total:
 
-    after_creating_anything
-    after_creating_an_initial_version
-    after_creating_a_revision
+    after_creating_a_version
+    after_accepting_a_version
+    after_declining_a_version
 
-    after_accepting_anything
-    after_accepting_an_initial_version
-    after_accepting_a_revision
+You can pass specific methods to them, as with (standard Rails callbacks)[http://edgeguides.rubyonrails.org/active_record_callbacks.html]:
 
-    after_declining_anything
-    after_declining_an_initial_version
-    after_declining_a_revision
+    after_creating_a_version :notify_admin_of_pending_version
+    after_accepting_a_version :reward_reputation_points
+    after_declining_a_version :deduct_repution_points
 
-To implement these custom handlers, just create a public method with its name inside of the versionable model. For instance:
+If you want a callback to trigger only after something happens to the initial version, you can specify it with the `only: :initial` hash. On the other hand, if you only want to trigger the callback for revisions, you can do so with `only: :revision`:
 
-    class Novel < ActiveRecord::Base
-      acts_as_versionable
+    after_acceping_a_version :mark_as_public, only: :initial
+    after_declining_a_version :temporarily_lock_edits, only: :revision
 
-      def after_creating_an_initial_version
-        AdminMailer.new_novel(self).deliver
-      end
-
-      def after_accepting_anything
-        increment(:revisions_count)
-        UserMailer.submission_accepted(self).deliver
-      end
-
-      def after_accepting_an_initial_version
-        update_attribute(:publicly_viewable, true)
-        UserMailer.revision_accepted(self).deliver
-      end
-
-      def after_declining_an_initial_version
-        self.destroy
-      end
-    end
 
 Issues
 ------

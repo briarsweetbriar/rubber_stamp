@@ -11,11 +11,15 @@ class CreateHandlerResources < ActiveRecord::Migration
       t.text :r_text
       t.time :r_time
 
+      t.integer :create_count, null: false, default: 0
       t.integer :accept_count, null: false, default: 0
       t.integer :decline_count, null: false, default: 0
+
+      t.integer :created_revisions_count, null: false, default: 0
       t.integer :accepted_revisions_count, null: false, default: 0
       t.integer :declined_revisions_count, null: false, default: 0
 
+      t.boolean :has_been_created, null: false, default: false
       t.boolean :accepted, null: false, default: false
       t.boolean :declined, null: false, default: false
 
