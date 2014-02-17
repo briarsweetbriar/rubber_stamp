@@ -32,6 +32,10 @@ module ControlledVersioning
       end
     end
 
+    def changed_attributes_count
+      ChangeCounter.new(self).count
+    end
+
     def revisions
       ChangeTracker.new(self)
     end
@@ -50,7 +54,17 @@ module ControlledVersioning
     def trigger_callbacks(type)
       if versionable.class.respond_to?(type)
         callbacks = versionable.class.send(type)
-        callbacks.each { |callback| versionable.send(callback) }
+        callbacks.each do |callback|
+          send_callback(callback)
+        end
+      end
+    end
+
+    def send_callback(callback)
+      if versionable.method(callback).parameters.length > 0
+        versionable.send(callback, self)
+      else
+        versionable.send(callback)
       end
     end
   end

@@ -27,6 +27,19 @@ describe ControlledVersioning::Version do
         ] })
     end
 
+    it 'changed attributes count' do
+      first_child_resource = @resource.child_resources[0]
+      first_grand_child_resource = first_child_resource.
+                                    grand_child_resources.first
+      version = @resource.submit_revision(r_string: "new string",
+        child_resources_attributes: [
+          {id: first_child_resource.id, grand_child_resources_attributes: [
+            {id: first_grand_child_resource.id, r_string: "new string"}
+          ]}
+      ])
+      expect(version.changed_attributes_count).to eq 2
+    end
+
     it 'changed attributes' do
       version = @resource.submit_revision(r_string: "new string")
       changed_attribute = version.revisions.attributes.first

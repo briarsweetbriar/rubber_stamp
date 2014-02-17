@@ -3,6 +3,8 @@ require "controlled_versioning/engine"
 # Core
 require "controlled_versioning/version"
 
+require "controlled_versioning/change_counter"
+
 require "controlled_versioning/change_tracker"
 require "controlled_versioning/change_tracker/attribute"
 require "controlled_versioning/change_tracker/child"
