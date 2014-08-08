@@ -1,6 +1,5 @@
 module RubberStamp
   class Version < ActiveRecord::Base
-    attr_accessor :creation_block
 
     belongs_to :versionable, polymorphic: true
     belongs_to :user
@@ -10,8 +9,6 @@ module RubberStamp
     scope :pending, -> { where(pending: true) }
     scope :accepted, -> { where(accepted: true) }
     scope :declined, -> { where(declined: true) }
-
-    after_create :call_creation_block
 
     def accept(&block)
       if pending?
@@ -40,11 +37,6 @@ module RubberStamp
 
     def is_a_child?
       false
-    end
-
-    private
-    def call_creation_block
-      creation_block.call(self) if creation_block
     end
   end
 end

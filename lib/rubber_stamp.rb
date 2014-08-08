@@ -73,16 +73,15 @@ module RubberStamp
                                            set_versionable_attribute_names(
                                            options[:nonversionable_attributes])
         
-        def new_with_version(attributes, &block)
+        def new_with_version(attributes)
           resource = self.new(attributes)
           return resource.errors if resource.invalid?
           initial_version = resource.build_initial_version
-          initial_version.creation_block = block if block_given?
           resource
         end
 
-        def create_with_version(attributes, &block)
-          resource = new_with_version(attributes, &block)
+        def create_with_version(attributes)
+          resource = new_with_version(attributes)
           resource.save
           resource
         end

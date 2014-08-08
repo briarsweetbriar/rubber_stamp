@@ -101,23 +101,6 @@ describe RubberStamp::Version do
     end
   end
 
-  it 'accepts blocks upon initialization' do
-    resource = VersionableResource.new_with_version(r_string: "unmod", r_float: 3) do |version|
-      version.versionable.update_column(:r_string, "modded")
-    end
-    resource.save
-    resource.reload
-    expect(resource.r_string).to eq "modded"
-  end
-
-  it 'accepts blocks upon creation' do
-    resource = VersionableResource.create_with_version(r_string: "unmod", r_float: 3) do |version|
-      version.versionable.update_column(:r_string, "modded")
-    end
-    resource.reload
-    expect(resource.r_string).to eq "modded"
-  end
-
   context 'accepts blocks' do
     before :each do
       @resource = create(:versionable_resource)

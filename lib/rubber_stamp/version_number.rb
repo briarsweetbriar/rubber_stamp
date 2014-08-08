@@ -1,3 +1,3 @@
 module RubberStamp
-  VERSION_NUMBER = "0.13.0"
+  VERSION_NUMBER = "0.14.0"
 end

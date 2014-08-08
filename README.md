@@ -165,16 +165,16 @@ Version Callbacks
 
 Aside from setting internal metadata, RubberStamp does nothing when a version is declined--or when an initial version is accepted. The only time it does something is when a revision is accepted, at which point it updates the versionable.
 
-Most likely, you'll want extra handling in these situations. Perhaps you want to award user reputation points for submitting an acceptable resource. Perhaps you want a resource to be hidden until it has been accepted. Perhaps you want to destroy resources that are declined. You can do all of these things by passing a block to `accept`, `decline`, `new_with_version`, or `create_with_version`. This block will receive the version in question as its sole parameter.
+Most likely, you'll want extra handling in these situations. Perhaps you want to award user reputation points for submitting an acceptable resource. Perhaps you want a resource to be hidden until it has been accepted. Perhaps you want to destroy resources that are declined. You can do all of these things by passing a block to `accept` or `decline`. This block will receive the version in question as its sole parameter.
 
 For instance:
 
-    @resource.accept { |version| version.versionable.make_visible }
+    @resource.accept { |version| version.versionable.make_visible if version.initial? }
 
 Or:
 
     @resource.decline do |version|
-      version.user.lose_points
+      version.user.deduct_points
       version.versionable.destroy if version.initial?
     end
 
