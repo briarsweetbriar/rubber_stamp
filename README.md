@@ -175,7 +175,7 @@ Or:
 
     @resource.decline do |version|
       version.user.lose_points
-      version.versionable.destroy
+      version.versionable.destroy if version.initial?
     end
 
 
