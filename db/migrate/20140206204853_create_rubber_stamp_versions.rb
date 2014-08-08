@@ -1,7 +1,7 @@
-# This migration comes from controlled_versioning (originally 20140206165158)
-class CreateControlledVersioningVersions < ActiveRecord::Migration
+# This migration comes from rubber_stamp (originally 20140206165158)
+class CreateRubberStampVersions < ActiveRecord::Migration
   def change
-    create_table :controlled_versioning_versions do |t|
+    create_table :rubber_stamp_versions do |t|
       t.string   :versionable_type, null: false
       t.integer  :versionable_id,   null: false
 
@@ -19,12 +19,12 @@ class CreateControlledVersioningVersions < ActiveRecord::Migration
 
       t.datetime :created_at
     end
-    add_index :controlled_versioning_versions, :initial
-    add_index :controlled_versioning_versions, :accepted
-    add_index :controlled_versioning_versions, :declined
-    add_index :controlled_versioning_versions, :pending
-    add_index :controlled_versioning_versions,
+    add_index :rubber_stamp_versions, :initial
+    add_index :rubber_stamp_versions, :accepted
+    add_index :rubber_stamp_versions, :declined
+    add_index :rubber_stamp_versions, :pending
+    add_index :rubber_stamp_versions,
       [:versionable_type, :versionable_id],
-      name: "controlled_versioning_versions_on_versionable"
+      name: "rubber_stamp_versions_on_versionable"
   end
 end

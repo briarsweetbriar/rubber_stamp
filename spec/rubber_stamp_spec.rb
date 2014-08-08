@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe "ControlledVersioning" do
+describe "RubberStamp" do
 
   it 'sets the initial version contributor if one is provided' do
     user = create(:user)
@@ -74,12 +74,12 @@ describe "ControlledVersioning" do
     it "rejects revisions with invalid changes" do
       version = @resource.submit_revision(r_string: "new string",
         r_float: 9000000.1)
-      expect(version).to have(1).error_on(:r_float)
+      expect(version.errors.size).to eq(1)
     end
 
     it "rejects revisions that make no changes" do
       version = @resource.submit_revision(@resource.versionable_attributes)
-      expect(version).to have(1).error
+      expect(version.errors.size).to eq(1)
     end
 
     context 'handles revision' do
@@ -172,7 +172,7 @@ describe "ControlledVersioning" do
       version = @resource.submit_revision(child_resources_attributes: [
         {id: first_child_resource.id, r_float: 90000000000.6}
       ])
-      expect(version).to have(1).error
+      expect(version.errors.size).to eq(1)
     end
 
     context 'handles revision' do

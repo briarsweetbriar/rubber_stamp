@@ -1,4 +1,4 @@
 # desc "Explaining what the task does"
-# task :controlled_versioning do
+# task :rubber_stamp do
 #   # Task goes here
 # end

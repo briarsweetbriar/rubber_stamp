@@ -1,10 +1,10 @@
-module ControlledVersioning
+module RubberStamp
   class Engine < ::Rails::Engine
-    isolate_namespace ControlledVersioning
+    isolate_namespace RubberStamp
   end
 end
 
-module ControlledVersioning
+module RubberStamp
   class Engine < ::Rails::Engine
     config.generators do |g|
       g.test_framework      :rspec,        :fixture => false

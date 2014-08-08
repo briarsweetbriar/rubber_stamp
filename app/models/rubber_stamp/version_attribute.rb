@@ -1,4 +1,4 @@
-module ControlledVersioning
+module RubberStamp
   class VersionAttribute < ActiveRecord::Base
 
     belongs_to :version, polymorphic: true

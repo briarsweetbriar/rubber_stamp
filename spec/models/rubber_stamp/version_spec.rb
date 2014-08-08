@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe ControlledVersioning::Version do
+describe RubberStamp::Version do
 
   context 'returns a hash of' do
     before :each do
@@ -85,8 +85,8 @@ describe ControlledVersioning::Version do
       ])
       changed_child = version.revisions.children.first
       changed_attribute = changed_child.attributes.first
-      expect(changed_child.new?).to be_true
-      expect(changed_attribute.name).to eq "r_float" || "parent_id"
+      expect(changed_child.new?).to be_truthy
+      expect(changed_attribute.name).to eq "r_float" || "parent_resource_id"
       expect(changed_attribute.old_value).to be_nil
       expect(changed_attribute.new_value).to eq "3.14" || @resource.id
     end
@@ -97,75 +97,46 @@ describe ControlledVersioning::Version do
         {id: first_child_resource.id, _destroy: true}
       ])
       changed_child = version.revisions.children.first
-      expect(changed_child.marked_for_removal?).to be_true
+      expect(changed_child.marked_for_removal?).to be_truthy
     end
   end
 
-  context 'allows for custom handling of' do
+  it 'accepts blocks upon initialization' do
+    resource = VersionableResource.new_with_version(r_string: "unmod", r_float: 3) do |version|
+      version.versionable.update_column(:r_string, "modded")
+    end
+    resource.save
+    resource.reload
+    expect(resource.r_string).to eq "modded"
+  end
+
+  it 'accepts blocks upon creation' do
+    resource = VersionableResource.create_with_version(r_string: "unmod", r_float: 3) do |version|
+      version.versionable.update_column(:r_string, "modded")
+    end
+    resource.reload
+    expect(resource.r_string).to eq "modded"
+  end
+
+  context 'accepts blocks' do
     before :each do
-      @resource = create(:handler_resource)
-      @revision_one = @resource.submit_revision(r_string: "first revision")
-      @revision_two = @resource.submit_revision(r_string: "second revisions")
+      @resource = create(:versionable_resource)
     end
 
-    context 'creations of' do
-      before :each do
-        @resource.reload
+    it 'upon acceptance' do
+      @resource.initial_version.accept do |version|
+        version.versionable.update_column(:r_string, "accepted")
       end
-
-      it 'any kind' do
-        expect(@resource.create_count).to eq 3
-      end
-
-      it 'initial versions' do
-        expect(@resource.has_been_created).to be_true
-      end
-
-      it 'revisions' do
-        expect(@resource.created_revisions_count).to eq 2
-      end
+      @resource.reload
+      expect(@resource.r_string).to eq "accepted"
     end
 
-    context 'acceptances of' do
-      before :each do
-        @resource.initial_version.accept
-        @revision_one.accept
-        @revision_two.accept
-        @resource.reload
+    it 'upon declining' do
+      @resource.initial_version.decline do |version|
+        version.versionable.update_column(:r_string, "declined")
       end
-
-      it 'any kind' do
-        expect(@resource.accept_count).to eq 3
-      end
-
-      it 'initial versions' do
-        expect(@resource.accepted).to be_true
-      end
-
-      it 'revisions' do
-        expect(@resource.accepted_revisions_count).to eq 2
-      end
-    end
-
-    context 'declines of' do
-      before :each do
-        @resource.initial_version.decline
-        @revision_one.decline
-        @revision_two.decline
-        @resource.reload
-      end
-
-      it 'any kind' do
-        expect(@resource.decline_count).to eq 3
-      end
-
-      it 'initial versions' do
-        expect(@resource.declined).to be_true
-      end
-
-      it 'revisions' do
-        expect(@resource.declined_revisions_count).to eq 2
-      end
+      @resource.reload
+      expect(@resource.r_string).to eq "declined"
     end
   end  
 

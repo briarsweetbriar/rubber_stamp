@@ -8,7 +8,7 @@ require "sprockets/railtie"
 # require "rails/test_unit/railtie"
 
 Bundler.require(*Rails.groups)
-require "controlled_versioning"
+require "rubber_stamp"
 
 module Dummy
   class Application < Rails::Application

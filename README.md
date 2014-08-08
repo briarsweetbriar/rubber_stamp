@@ -1,25 +1,25 @@
-ControlledVersioning [![Gem Version](https://badge.fury.io/rb/controlled_versioning.png)](http://badge.fury.io/rb/controlled_versioning) [![Build Status](https://travis-ci.org/timothythehuman/controlled_versioning.png?branch=master)](https://travis-ci.org/timothythehuman/controlled_versioning) [![Code Climate](https://codeclimate.com/repos/52f14fbd69568017f9000949/badges/88b0d048286329d8ba82/gpa.png)](https://codeclimate.com/repos/52f14fbd69568017f9000949/feed)
+RubberStamp [![Gem Version](https://badge.fury.io/rb/rubber_stamp.png)](http://badge.fury.io/rb/rubber_stamp) [![Build Status](https://travis-ci.org/timothythehuman/rubber_stamp.png?branch=master)](https://travis-ci.org/timothythehuman/rubber_stamp) [![Code Climate](https://codeclimate.com/repos/52f14fbd69568017f9000949/badges/88b0d048286329d8ba82/gpa.png)](https://codeclimate.com/repos/52f14fbd69568017f9000949/feed)
 =====================
-ControlledVersioning extends Rails with versioning functionality, including the ability to accept and decline revisions. This gem is inspired by the excellent [PaperTrail](https://github.com/airblade/paper_trail), though with more emphasis on controlling incoming data than simply recording it. This makes ControlledVersioning ideal for crowd-sourced websites, as contributions and revisions can be reviewed before publication.
+RubberStamp extends Rails with versioning functionality, including the ability to accept and decline revisions. This gem is inspired by the excellent [PaperTrail](https://github.com/airblade/paper_trail), though with more emphasis on controlling incoming data than simply recording it. This makes RubberStamp ideal for crowd-sourced websites, as contributions and revisions can be reviewed before publication.
 
 Compatibility
 -------------
 
-At the moment, ControlledVersioning only supports Rails 4.
+At the moment, RubberStamp only supports Rails 4.
 
 Installation
 ------------
 
- 1. Add ControlledVersioning to your gemfile: `gem 'controlled_versioning'`
+ 1. Add RubberStamp to your gemfile: `gem 'rubber_stamp'`
  2. Run bundler: `bundle install`
- 3. Run this in your app folder: `rake controlled_versioning:install:migrations`
+ 3. Run this in your app folder: `rake rubber_stamp:install:migrations`
  4. Run your migrations: `rake db:migrate`
  5. Add `acts_as_versionable` to the models you want to have controlled versioning
  
 Options
 -------
 
-By default, ControlledVersioning will track all attributes except a model's `id`, `created_at`, and `updated_at`. If you want to specify a set of attributes to track, you can do so by passing the `versionable_attributes` argument to `acts_as_versionable`:
+By default, RubberStamp will track all attributes except a model's `id`, `created_at`, and `updated_at`. If you want to specify a set of attributes to track, you can do so by passing the `versionable_attributes` argument to `acts_as_versionable`:
 
     acts_as_versionable versionable_attributes: [:title, :author]
     
@@ -35,7 +35,7 @@ Finally, if a model is nested within a parent model using `accepts_nested_attrib
 Tracking Users and Notes
 ------------------------
 
-ControlledVersioning can keep track of both who contributed a revision and any notes they choose to leave about the revision. In both cases, these attributes must be passed in while saving the model.
+RubberStamp can keep track of both who contributed a revision and any notes they choose to leave about the revision. In both cases, these attributes must be passed in while saving the model.
 
 With users, the simplest approach is to merge the current user into the strong_params hash:
 
@@ -67,7 +67,7 @@ or:
       @novel = Novel.create_with_version(novel_params)
     end
 
-When you do so, ControlledVersioning will automatically clone its attributes to create an initial version. You can view this version by calling:
+When you do so, RubberStamp will automatically clone its attributes to create an initial version. You can view this version by calling:
 
     @novel.initial_version
 
@@ -86,7 +86,7 @@ When updating a versionable model, you'll need to use `submit_revision` instead 
       @novel.submit_revision(novel_params)
     end
 
-When using `submit_revision`, your original `@novel` will not be altered. Instead, ControlledVersioning creates a new version with the submitted revisions. You can then review this submission:
+When using `submit_revision`, your original `@novel` will not be altered. Instead, RubberStamp creates a new version with the submitted revisions. You can then review this submission:
 
     @novel.versions.last
 
@@ -98,7 +98,7 @@ Or accept it:
 
     @novel.versions.last.accept
 
-If you accept it, then ControlledVersioning will update the original with your revisions:
+If you accept it, then RubberStamp will update the original with your revisions:
 
     @novel.title # => "fragments from Work in Progress"
     @novel.submit_revision(title: "Finnegans Wake")
@@ -163,32 +163,26 @@ The `Version` model supports three scopes corresponding to the three states a ve
 Version Callbacks
 -----------------
 
-Aside from setting internal metadata, ControlledVersioning does nothing when a version is declined--or when an initial version is accepted. The only time it does something is when a revision is accepted, at which point it updates the versionable.
+Aside from setting internal metadata, RubberStamp does nothing when a version is declined--or when an initial version is accepted. The only time it does something is when a revision is accepted, at which point it updates the versionable.
 
-Most likely, you'll want extra handling in these situations. Perhaps you want to award a user reputation points for submitting an acceptable resource. Perhaps you want a resource to be hidden until it has been accepted. Perhaps you want to destroy resources that are declined. You can do all of these things with version callbacks, which function a lot like Rails's baked-in callbacks.
+Most likely, you'll want extra handling in these situations. Perhaps you want to award user reputation points for submitting an acceptable resource. Perhaps you want a resource to be hidden until it has been accepted. Perhaps you want to destroy resources that are declined. You can do all of these things by passing a block to `accept`, `decline`, `new_with_version`, or `create_with_version`. This block will receive the version in question as its sole parameter.
 
-There are three callbacks in total:
+For instance:
 
-    after_creating_a_version
-    after_accepting_a_version
-    after_declining_a_version
+    @resource.accept { |version| version.versionable.make_visible }
 
-You can pass specific methods to them, as with (standard Rails callbacks)[http://edgeguides.rubyonrails.org/active_record_callbacks.html]:
+Or:
 
-    after_creating_a_version :notify_admin_of_pending_version
-    after_accepting_a_version :reward_reputation_points
-    after_declining_a_version :deduct_repution_points
-
-If you want a callback to trigger only after something happens to the initial version, you can specify it with the `only: :initial` hash. On the other hand, if you only want to trigger the callback for revisions, you can do so with `only: :revision`:
-
-    after_acceping_a_version :mark_as_public, only: :initial
-    after_declining_a_version :temporarily_lock_edits, only: :revision
+    @resource.decline do |version|
+      version.user.lose_points
+      version.versionable.destroy
+    end
 
 
 Issues
 ------
 
-ControlledVersioning is still very young, and both its functionality and its documentation are bound to be lacking. If you're having trouble with something, feel free to open an issue.
+RubberStamp is still very young, and both its functionality and its documentation are bound to be lacking. If you're having trouble with something, feel free to open an issue.
 
 Contributing
 ------------

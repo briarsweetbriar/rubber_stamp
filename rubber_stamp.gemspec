@@ -1,18 +1,18 @@
 $:.push File.expand_path("../lib", __FILE__)
 
 # Maintain your gem's version:
-require "controlled_versioning/version_number"
+require "rubber_stamp/version_number"
 
 # Describe your gem and declare its dependencies:
 Gem::Specification.new do |s|
-  s.name        = "controlled_versioning"
-  s.version     = ControlledVersioning::VERSION_NUMBER
-  s.authors     = ["timothythehuman"]
+  s.name        = "rubber_stamp"
+  s.version     = RubberStamp::VERSION_NUMBER
+  s.authors     = ["timothycommoner"]
   s.email       = ["timothythehuman@gmail.com"]
-  s.homepage    = "https://github.com/timothythehuman/controlled_versioning"
+  s.homepage    = "https://github.com/timothycommoner/rubber_stamp"
   s.summary     = "Adds model versioning to a Rails app, with the ability to " +
                   "approve and declined revisions."
-  s.description = "With Controlled Versioning, you can make any model " +
+  s.description = "With RubberStamp, you can make any model " +
                   "versionable. This will record suggested changes to the " +
                   "model, which can then be approved or declined according " +
                   "to your application's design."

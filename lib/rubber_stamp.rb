@@ -1,27 +1,27 @@
-require "controlled_versioning/engine"
+require "rubber_stamp/engine"
 
 # Core
-require "controlled_versioning/version"
+require "rubber_stamp/version"
 
-require "controlled_versioning/change_counter"
+require "rubber_stamp/change_counter"
 
-require "controlled_versioning/change_tracker"
-require "controlled_versioning/change_tracker/attribute"
-require "controlled_versioning/change_tracker/child"
+require "rubber_stamp/change_tracker"
+require "rubber_stamp/change_tracker/attribute"
+require "rubber_stamp/change_tracker/child"
 
-require "controlled_versioning/initial_version"
-require "controlled_versioning/initial_version/factory"
+require "rubber_stamp/initial_version"
+require "rubber_stamp/initial_version/factory"
 
-require "controlled_versioning/revision"
-require "controlled_versioning/revision/auditor"
-require "controlled_versioning/revision/factory"
-require "controlled_versioning/revision/publisher"
+require "rubber_stamp/revision"
+require "rubber_stamp/revision/auditor"
+require "rubber_stamp/revision/factory"
+require "rubber_stamp/revision/publisher"
 
 # Add utility classes
 require "support/array_converter"
 require "support/attribute_encapsulator"
 
-module ControlledVersioning
+module RubberStamp
   module ActsAsVersionable
     extend ActiveSupport::Concern
  
@@ -32,27 +32,6 @@ module ControlledVersioning
       def acts_as_versionable(options = {})
 
         send :include, InstanceMethods
-
-        def define_callbacks(*types)
-          types.each { |type| define_callback(type) }
-        end
-
-        def define_callback(type)
-          define_singleton_method("after_#{type}_a_version") do |*args|
-            options = args.extract_options!
-            options.merge!(only: :general) if options[:only].blank?
-            register_callback_methods(type, args, options)
-          end
-        end
-
-        def register_callback_methods(type, args, options)
-          restriction = options[:only].to_s
-          define_singleton_method("#{restriction}_#{type}_callbacks") do
-            args
-          end
-        end
-
-        define_callbacks :creating, :accepting, :declining
 
         def set_versionable_attribute_names(nonversionables)
           nonversionables = [] unless nonversionables.present?
@@ -80,12 +59,12 @@ module ControlledVersioning
 
         if is_a_nested_association?
           has_many :version_children,
-                   class_name: 'ControlledVersioning::VersionChild',
+                   class_name: 'RubberStamp::VersionChild',
                    as: :versionable
         else
           has_many :versions,
                    lambda { order("created_at ASC")},
-                   class_name: 'ControlledVersioning::Version',
+                   class_name: 'RubberStamp::Version',
                    as: :versionable
         end
 
@@ -94,15 +73,16 @@ module ControlledVersioning
                                            set_versionable_attribute_names(
                                            options[:nonversionable_attributes])
         
-        def new_with_version(attributes)
+        def new_with_version(attributes, &block)
           resource = self.new(attributes)
           return resource.errors if resource.invalid?
-          resource.build_initial_version
+          initial_version = resource.build_initial_version
+          initial_version.creation_block = block if block_given?
           resource
         end
 
-        def create_with_version(attributes)
-          resource = new_with_version(attributes)
+        def create_with_version(attributes, &block)
+          resource = new_with_version(attributes, &block)
           resource.save
           resource
         end
@@ -144,4 +124,4 @@ module ControlledVersioning
   end
 end
 
-ActiveRecord::Base.send :include, ControlledVersioning::ActsAsVersionable
+ActiveRecord::Base.send :include, RubberStamp::ActsAsVersionable

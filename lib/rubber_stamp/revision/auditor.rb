@@ -6,9 +6,9 @@ class Revision::Auditor < Revision
   end
 
   def changes_original?
-    return true if versionable.marked_for_destruction?
-    return true if changes_at_least_one_attribute?
-    return true if changes_at_least_one_nested_association?
+    return true if versionable.marked_for_destruction? ||
+                   changes_at_least_one_attribute? ||
+                   changes_at_least_one_nested_association?
     return false
   end
 

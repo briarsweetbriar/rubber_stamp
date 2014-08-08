@@ -1,4 +1,4 @@
-module ControlledVersioning
+module RubberStamp
   class VersionChild < ActiveRecord::Base
 
     belongs_to :versionable, polymorphic: true
