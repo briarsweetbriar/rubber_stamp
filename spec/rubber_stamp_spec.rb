@@ -8,24 +8,11 @@ describe "RubberStamp" do
     expect(resource.initial_version.user).to eq user
   end
 
-  it 'does not set the initial version contributor if one is not provided' do
-    resource = create(:versionable_resource)
-    expect(resource.initial_version.user).to be_nil
-  end
-
   it 'sets the revision contributor if they are provided' do
     user = create(:user)
     resource = create(:versionable_resource)
-    revision = resource.submit_revision(r_string: "new string",
-          r_float: 90.1, user: user)
+    revision = resource.submit_revision(r_string: "new string", user: user)
     expect(revision.user).to eq user
-  end
-
-  it 'does not set the revision contributor if they are not provided' do
-    resource = create(:versionable_resource)
-    revision = resource.submit_revision(r_string: "new string",
-          r_float: 90.1)
-    expect(revision.user).to be_nil
   end
 
   it 'writes initial version notes if they are provided' do
@@ -34,47 +21,88 @@ describe "RubberStamp" do
     expect(resource.initial_version.notes).to eq notes
   end
 
-  it 'does not write initial version notes if they are not provided' do
-    resource = create(:versionable_resource)
-    expect(resource.initial_version.notes).to be_nil
-  end
-
   it 'writes revision notes if they are provided' do
     notes = "These are my notes"
     resource = create(:versionable_resource)
-    revision = resource.submit_revision(r_string: "new string",
-          r_float: 90.1, notes: notes)
+    revision = resource.submit_revision(r_string: "new string", notes: notes)
     expect(revision.notes).to eq notes
   end
 
-  it 'does not write revision notes if they are not provided' do
-    resource = create(:versionable_resource)
-    revision = resource.submit_revision(r_string: "new string",
-          r_float: 90.1)
-    expect(revision.notes).to be_nil
+  context "#nested_associations" do
+    it 'returns a list of nested_associations' do
+      expect(ParentResource.nested_associations).to match_array [:child_resources]
+    end
   end
-  
-  context 'by default' do
+
+  context "#has_nested_associations?" do
+    it "returns true if it has nested associations" do
+      expect(ParentResource.has_nested_associations?).to be_truthy
+    end
+
+    it "returns false if it has no nested associations" do
+      expect(VersionableResource.has_nested_associations?).to be_falsey
+    end
+  end
+
+  context "#is_a_nested_association" do
+    it "returns true if acts_as_versionable received the nested_within option" do
+      resource = create(:child_resource)
+      expect(resource.is_a_nested_association?).to be_truthy
+    end
+
+    it "returns false if acts_as_versionable did not receive the nested_within option" do
+      resource = create(:versionable_resource)
+      expect(resource.is_a_nested_association?).to be_falsey
+    end
+  end
+
+  context "#new_with_version" do
+    before :each do
+      @resource = VersionableResource.new_with_version(r_string: "I'm new!")
+    end
+
+    it "creates a version" do
+      expect(@resource.versions.first.present?).to be_truthy
+    end
+
+    it "instantiates the record" do
+      expect(@resource.new_record?).to be_truthy
+    end
+  end
+
+  context "#new_with_version" do
+    before :each do
+      @resource = VersionableResource.create_with_version(r_string: "I'm new!")
+    end
+
+    it "creates a version" do
+      expect(@resource.initial_version.present?).to be_truthy
+    end
+
+    it "creates the record" do
+      expect(@resource.persisted?).to be_truthy
+    end
+  end
+
+  context "#initial_version" do
+    it "returns the initial version" do
+      resource = create(:versionable_resource)
+      resource.submit_revision(r_string: "new string")
+      resource.submit_revision(r_float: 63.5)
+      expect(resource.initial_version).to eq(resource.versions.find_by(initial: true))
+    end
+  end
+
+  context "#versionable_attributes" do
+    it 'returns a list of versionable attributes' do
+      resource = create(:versionable_resource)
+      expect(resource.versionable_attributes).to eq(resource.attributes.except("id", "updated_at", "created_at"))
+    end
+  end
+
+  context "#submit_revision" do
     before :each do
       @resource = create(:versionable_resource)
-    end
-
-    it 'returns a list of versionable attributes' do
-      expect(@resource.versionable_attributes).to eq(
-        @resource.attributes.except("id", "updated_at", "created_at"))
-    end
-
-    it 'returns the initial version' do
-      @resource.submit_revision(r_string: "new string")
-      @resource.submit_revision(r_float: 63.5)
-      expect(@resource.initial_version).to eq(
-        @resource.versions.find_by(initial: true))
-    end
-
-    it "rejects revisions with invalid changes" do
-      version = @resource.submit_revision(r_string: "new string",
-        r_float: 9000000.1)
-      expect(version.errors.size).to eq(1)
     end
 
     it "rejects revisions that make no changes" do
@@ -82,56 +110,28 @@ describe "RubberStamp" do
       expect(version.errors.size).to eq(1)
     end
 
-    context 'handles revision' do
+    context "succeeding" do
       before :each do
-        @version = @resource.submit_revision(r_string: "new string",
-          r_float: 90.1)
+        @version = @resource.submit_revision(r_string: "new string", r_float: 90.1)
       end
 
-      it 'by creating versions with the suggested attributes' do
-        @resource.reload
+      it 'creates versions with the suggested attributes' do
         r_string = @version.version_attributes.find_by(name: "r_string")
         r_float = @version.version_attributes.find_by(name: "r_float")
         expect(r_string.old_value).to eq("my string")
         expect(r_string.new_value).to eq("new string")
         expect(r_float.old_value).to eq("3.14")
         expect(r_float.new_value).to eq("90.1")
+      end
+
+      it "doesn't alter revised attributes on the versionable model" do
+        @resource.reload
         expect(@resource.r_string).to eq("my string")
         expect(@resource.r_float).to eq(3.14)
       end
 
-      it "by skipping non-revised attributes" do
+      it "skips non-revised attributes" do
         expect(@version.version_attributes.find_by(name: "r_text")).to be_nil
-      end
-
-      it 'by updating model data if its revisions are accepted' do
-        @version.accept
-        @resource.reload
-        @version.reload
-        expect(@resource.r_string).to eq "new string"
-        expect(@resource.r_float).to eq 90.1
-        expect(@version.pending).to eq false
-        expect(@version.declined).to eq false
-        expect(@version.accepted).to eq true
-      end
-
-      it 'by maintaining model data if its revisions are declined' do
-        @version.decline
-        @resource.reload
-        @version.reload
-        expect(@resource.r_string).to eq "my string"
-        expect(@resource.r_float).to eq 3.14
-        expect(@version.pending).to eq false
-        expect(@version.declined).to eq true
-        expect(@version.accepted).to eq false
-      end
-
-      it 'by not updating model data if the initial version is accepted' do
-        @version.accept
-        @resource.initial_version.accept
-        @resource.reload
-        expect(@resource.r_string).to eq "new string"
-        expect(@resource.r_float).to eq 90.1
       end
     end
 
@@ -144,7 +144,6 @@ describe "RubberStamp" do
         @resource.reload
         version_attribute = @version.version_attributes.find_by(name: "r_text")
         expect(version_attribute.version_text_attributes.size).to eq(3)
-        expect(@resource.r_text).to eq("my text")
       end
 
       it 'by updating model data if its revisions are accepted' do
@@ -157,189 +156,6 @@ describe "RubberStamp" do
         @version.decline
         @resource.reload
         expect(@resource.r_text).to eq "my text"
-      end
-    end
-  end
-
-  context 'with nested attributes' do
-    before :each do
-      @resource = ParentResource.create_with_version({ r_string: "my string",
-        r_float: 3.14, child_resources_attributes: [
-          { r_string: "my string", r_float: 3.14,
-            grand_child_resources_attributes: [
-              { r_string: "my string", r_float: 3.14 },
-              { r_string: "my string", r_float: 3.14 },
-              { r_string: "my string", r_float: 3.14 }
-            ] },
-          { r_string: "my string", r_float: 3.14,
-            grand_child_resources_attributes: [
-              { r_string: "my string", r_float: 3.14 },
-              { r_string: "my string", r_float: 3.14 },
-              { r_string: "my string", r_float: 3.14 }
-            ] },
-          { r_string: "my string", r_float: 3.14,
-            grand_child_resources_attributes: [
-              { r_string: "my string", r_float: 3.14 },
-              { r_string: "my string", r_float: 3.14 },
-              { r_string: "my string", r_float: 3.14 }
-            ] }
-        ] })
-    end
-
-    it 'creates version children' do
-      expect(@resource.initial_version.version_children.length).to eq 3
-      expect(@resource.initial_version.version_children.last.version_children.
-        length).to eq 3
-    end
-
-    it 'rejects invalid children' do
-      first_child_resource = @resource.child_resources.first
-      version = @resource.submit_revision(child_resources_attributes: [
-        {id: first_child_resource.id, r_float: 90000000000.6}
-      ])
-      expect(version.errors.size).to eq(1)
-    end
-
-    context 'handles revision' do
-      before :each do
-        @first_child_resource = @resource.child_resources[0]
-        @version = @resource.submit_revision(child_resources_attributes: [
-          {id: @first_child_resource.id, r_string: "new string"}
-        ])
-      end
-
-      it 'by creating versions for its children' do
-        expect(@version.version_children.length).to eq 1
-        changed_attribute = @version.version_children.
-                            find_by(versionable: @first_child_resource).
-                            version_attributes.find_by(name: "r_string")
-        expect(changed_attribute.new_value).to eq "new string"
-        expect(changed_attribute.old_value).to eq "my string"
-      end
-
-      it 'by updating its children data if its revisions are approved' do
-        @version.accept
-        @first_child_resource.reload
-        expect(@first_child_resource.r_string).to eq "new string"
-      end
-    end
-
-    context 'handles revision for multiple children' do
-      before :each do
-        @first_child_resource = @resource.child_resources[0]
-        @second_child_resource = @resource.child_resources[1]
-        @version = @resource.submit_revision(child_resources_attributes: [
-          {id: @first_child_resource.id, r_string: "new string"},
-          {id: @second_child_resource.id, r_string: "second new string"}
-        ])
-      end
-
-      it 'by creating versions for the full family' do
-        expect(@version.version_children.length).to eq 2
-        first_changed_attribute = @version.version_children.
-                            find_by(versionable: @first_child_resource).
-                            version_attributes.find_by(name: "r_string")
-        second_changed_attribute = @version.version_children.
-                            find_by(versionable: @second_child_resource).
-                            version_attributes.find_by(name: "r_string")
-        expect(first_changed_attribute.new_value).to eq "new string"
-        expect(first_changed_attribute.old_value).to eq "my string"
-        expect(second_changed_attribute.new_value).to eq "second new string"
-        expect(second_changed_attribute.old_value).to eq "my string"
-      end
-
-      it 'by updating all children if its revisions are approved' do
-        @version.accept
-        @first_child_resource.reload
-        @second_child_resource.reload
-        expect(@first_child_resource.r_string).to eq "new string"
-        expect(@second_child_resource.r_string).to eq "second new string"
-      end
-    end
-
-    context 'handles revision for deeply nested children' do
-      before :each do
-        @first_child_resource = @resource.child_resources[0]
-        @first_grand_child_resource = @first_child_resource.
-                                      grand_child_resources.first
-        @version = @resource.submit_revision(child_resources_attributes: [
-          {id: @first_child_resource.id, grand_child_resources_attributes: [
-            {id: @first_grand_child_resource.id, r_string: "new string"}
-          ]}
-        ])
-        @child_version = @version.version_children.
-                         find_by(versionable_id: @first_child_resource.id)
-      end
-
-      it 'by creating versions for the full family' do
-        expect(@child_version.version_children.length).to eq 1
-        changed_attribute = @child_version.version_children.
-                            find_by(versionable: @first_grand_child_resource).
-                            version_attributes.find_by(name: "r_string")
-        expect(changed_attribute.new_value).to eq "new string"
-        expect(changed_attribute.old_value).to eq "my string"
-      end
-
-      it 'by updating its deeply nested data if its revisions are approved' do
-        @version.accept
-        @first_grand_child_resource.reload
-        expect(@first_grand_child_resource.r_string).to eq "new string"
-      end
-    end
-
-    context 'handles new children' do
-      before :each do
-        @version = @resource.submit_revision(child_resources_attributes: [
-          {r_float: 14.0}
-        ])
-        @child_version = @version.version_children.first
-      end
-
-      it 'by creating version for new children' do
-        expect(@version.version_children.length).to eq 1
-      end
-
-      it 'by creating attributes for new children' do
-        changed_attribute = @child_version.version_attributes.
-                            find_by(name: "r_float")
-        expect(changed_attribute.new_value).to eq "14.0"
-        expect(changed_attribute.old_value).to be_nil
-      end
-
-      it 'by creating new children when approved' do
-        @version.accept
-        @resource.reload
-        expect(@resource.child_resources.find_by(r_float: 14.0)).to_not be_nil
-      end
-    end
-
-    context 'handles child destruction' do
-      before :each do
-        @first_child_resource = @resource.child_resources[0]
-        @version = @resource.submit_revision(child_resources_attributes: [
-          {id: @first_child_resource.id, _destroy: "1"}
-        ])
-        @child_version = @version.version_children.find_by(versionable_id:
-                         @first_child_resource.id)
-      end
-
-      it 'by creating a version for the marked child' do
-        expect(@version.version_children.length).to eq 1
-      end
-
-      it 'by marking a resource for removal if _destroy is sent' do
-        expect(@child_version.marked_for_removal).to be true
-      end
-
-      it 'by preserving a resource until its mark is approved' do
-        @first_child_resource.reload
-        expect(@first_child_resource).to be_an_instance_of(ChildResource)
-      end
-
-      it 'by removing a resource if its mark was approved' do
-        @version.accept
-        @resource.reload
-        expect(@resource.child_resources.length).to eq 2
       end
     end
   end

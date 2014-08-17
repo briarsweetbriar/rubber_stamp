@@ -29,4 +29,11 @@ describe "Revision::Factory" do
     end
   end
 
+  it "#build rejects revisions with invalid changes" do
+    resource = create(:validating_resource)
+    version = resource.submit_revision(r_string: "new string",
+      r_float: 9000000.1)
+    expect(version.errors.size).to eq(1)
+  end
+
 end

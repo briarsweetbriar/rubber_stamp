@@ -4,27 +4,7 @@ describe RubberStamp::Version do
 
   context 'returns a hash of' do
     before :each do
-      @resource = ParentResource.create_with_version({ r_string: "my string",
-        r_float: 3.14, child_resources_attributes: [
-          { r_string: "my string", r_float: 3.14,
-            grand_child_resources_attributes: [
-              { r_string: "my string", r_float: 3.14 },
-              { r_string: "my string", r_float: 3.14 },
-              { r_string: "my string", r_float: 3.14 }
-            ] },
-          { r_string: "my string", r_float: 3.14,
-            grand_child_resources_attributes: [
-              { r_string: "my string", r_float: 3.14 },
-              { r_string: "my string", r_float: 3.14 },
-              { r_string: "my string", r_float: 3.14 }
-            ] },
-          { r_string: "my string", r_float: 3.14,
-            grand_child_resources_attributes: [
-              { r_string: "my string", r_float: 3.14 },
-              { r_string: "my string", r_float: 3.14 },
-              { r_string: "my string", r_float: 3.14 }
-            ] }
-        ] })
+      @resource = create(:parent_with_grand_children)
     end
 
     it 'changed attributes count' do
