@@ -17,8 +17,7 @@ FactoryGirl.define do
       end
 
       before(:create) do |parent, evaluator|
-        create_list(:child_resource, evaluator.children_count,
-          parent_resource: parent)
+        evaluator.children_count.times{ create(:child_resource, parent_resource: parent) }
       end
     end
 
@@ -28,7 +27,7 @@ FactoryGirl.define do
       end
 
       before(:create) do |parent, evaluator|
-        Array.new(evaluator.children_count, create(:child_resource, parent_resource: parent, grand_child_resources: [build(:grand_child_resource), build(:grand_child_resource), build(:grand_child_resource)]))
+        evaluator.children_count.times{ create(:child_resource, parent_resource: parent, grand_child_resources: [build(:grand_child_resource), build(:grand_child_resource), build(:grand_child_resource)]) }
       end
     end
 
