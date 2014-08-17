@@ -9,14 +9,8 @@ describe RubberStamp::Version do
 
     it 'changed attributes count' do
       first_child_resource = @resource.child_resources[0]
-      first_grand_child_resource = first_child_resource.
-                                    grand_child_resources.first
-      version = @resource.submit_revision(r_string: "new string",
-        child_resources_attributes: [
-          {id: first_child_resource.id, grand_child_resources_attributes: [
-            {id: first_grand_child_resource.id, r_string: "new string"}
-          ]}
-      ])
+      first_grand_child_resource = first_child_resource.grand_child_resources.first
+      version = @resource.submit_revision(r_string: "new string", child_resources_attributes: [ {id: first_child_resource.id, grand_child_resources_attributes: [ { id: first_grand_child_resource.id, r_string: "new string" } ] } ])
       expect(version.changed_attributes_count).to eq 2
     end
 
@@ -43,13 +37,8 @@ describe RubberStamp::Version do
 
     it 'changed deeply nested children' do
       first_child_resource = @resource.child_resources[0]
-      first_grand_child_resource = first_child_resource.
-                                    grand_child_resources.first
-      version = @resource.submit_revision(child_resources_attributes: [
-        {id: first_child_resource.id, grand_child_resources_attributes: [
-          {id: first_grand_child_resource.id, r_string: "new string"}
-        ]}
-      ])
+      first_grand_child_resource = first_child_resource.grand_child_resources.first
+      version = @resource.submit_revision(child_resources_attributes: [ { id: first_child_resource.id, grand_child_resources_attributes: [ { id: first_grand_child_resource.id, r_string: "new string" } ] } ])
       changed_child = version.revisions.children.first
       changed_grand_child = changed_child.children.first
       changed_attribute = changed_grand_child.attributes.first
@@ -60,9 +49,7 @@ describe RubberStamp::Version do
     end
 
     it 'new children' do
-      version = @resource.submit_revision(child_resources_attributes: [
-        {r_float: 3.14}
-      ])
+      version = @resource.submit_revision(child_resources_attributes: [ {r_float: 3.14} ])
       changed_child = version.revisions.children.first
       changed_attribute = changed_child.attributes.first
       expect(changed_child.new?).to be_truthy
@@ -73,9 +60,7 @@ describe RubberStamp::Version do
 
     it 'marked children' do
       first_child_resource = @resource.child_resources[0]
-      version = @resource.submit_revision(child_resources_attributes: [
-        {id: first_child_resource.id, _destroy: true}
-      ])
+      version = @resource.submit_revision(child_resources_attributes: [ {id: first_child_resource.id, _destroy: true} ])
       changed_child = version.revisions.children.first
       expect(changed_child.marked_for_removal?).to be_truthy
     end
