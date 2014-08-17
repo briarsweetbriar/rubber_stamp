@@ -134,6 +134,31 @@ describe "RubberStamp" do
         expect(@resource.r_float).to eq 90.1
       end
     end
+
+    context 'handles revision of texts' do
+      before :each do
+        @version = @resource.submit_revision(r_text: "this text is revised")
+      end
+
+      it 'by creating versions with the suggested attributes' do
+        @resource.reload
+        version_attribute = @version.version_attributes.find_by(name: "r_text")
+        expect(version_attribute.version_text_attributes.size).to eq(3)
+        expect(@resource.r_text).to eq("my text")
+      end
+
+      it 'by updating model data if its revisions are accepted' do
+        @version.accept
+        @resource.reload
+        expect(@resource.r_text).to eq "this text is revised"
+      end
+
+      it 'by maintaining model data if its revisions are declined' do
+        @version.decline
+        @resource.reload
+        expect(@resource.r_text).to eq "my text"
+      end
+    end
   end
 
   context 'with nested attributes' do

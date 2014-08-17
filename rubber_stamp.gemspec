@@ -23,9 +23,10 @@ Gem::Specification.new do |s|
   s.test_files = Dir["spec/**/*"]
 
   s.add_dependency "rails", "~> 4.0"
+  s.add_dependency "diff_match_patch_native", '~> 1.0.2'
 
   s.add_development_dependency "pg"
-  s.add_development_dependency "debugger"
+  s.add_development_dependency "byebug"
   s.add_development_dependency "rspec-rails"
   s.add_development_dependency "guard-rspec"
   s.add_development_dependency "guard-spork"

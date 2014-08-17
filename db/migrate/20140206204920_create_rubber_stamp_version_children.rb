@@ -1,4 +1,4 @@
-# This migration comes from rubber_stamp (originally 20140206165210)
+# This migration comes from rubber_stamp (originally 20140206165220)
 class CreateRubberStampVersionChildren < ActiveRecord::Migration
   def change
     create_table :rubber_stamp_version_children do |t|

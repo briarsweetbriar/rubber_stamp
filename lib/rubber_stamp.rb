@@ -16,6 +16,8 @@ require "rubber_stamp/revision"
 require "rubber_stamp/revision/auditor"
 require "rubber_stamp/revision/factory"
 require "rubber_stamp/revision/publisher"
+require "rubber_stamp/revision/text_attribute"
+require "rubber_stamp/revision/text_attribute/factory"
 
 # Add utility classes
 require "support/array_converter"

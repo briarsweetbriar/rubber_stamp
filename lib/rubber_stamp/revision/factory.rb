@@ -51,10 +51,26 @@ class Revision::Factory < Revision
   end
 
   def build_attribute(attr)
+    return build_text_attributes(attr) if attr_is_text?(attr)
     version_attributes.build(
       name: attr.key,
       new_value: attr.value,
       old_value: previous_value(attr.key))
+  end
+
+  def build_text_attributes(attr)
+    version_attribute = version_attributes.build(
+      name: attr.key,
+      old_value: previous_value(attr.key))
+    Revision::TextAttribute::Factory.new(
+      version: version,
+      attr: attr,
+      version_attribute: version_attribute
+    ).build
+  end
+
+  def attr_is_text?(attr)
+    versionable.class.columns_hash[attr.key].type == :text
   end
 
   def build_children

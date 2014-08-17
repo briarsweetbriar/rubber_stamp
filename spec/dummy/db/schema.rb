@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140206204920) do
+ActiveRecord::Schema.define(version: 20140809204930) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -148,6 +148,17 @@ ActiveRecord::Schema.define(version: 20140206204920) do
   add_index "rubber_stamp_version_children", ["version_type", "version_id"], name: "rubber_stamp_version_children_on_version", using: :btree
   add_index "rubber_stamp_version_children", ["versionable_type", "versionable_id"], name: "rubber_stamp_version_children_on_versionable", using: :btree
 
+  create_table "rubber_stamp_version_text_attributes", force: true do |t|
+    t.integer "version_attribute_id",                 null: false
+    t.integer "index"
+    t.string  "text"
+    t.boolean "deletion",             default: false, null: false
+  end
+
+  add_index "rubber_stamp_version_text_attributes", ["deletion"], name: "index_rubber_stamp_version_text_attributes_on_deletion", using: :btree
+  add_index "rubber_stamp_version_text_attributes", ["index"], name: "index_rubber_stamp_version_text_attributes_on_index", using: :btree
+  add_index "rubber_stamp_version_text_attributes", ["version_attribute_id"], name: "rubber_stamp_version_text_attriubtes_on_attribute", using: :btree
+
   create_table "rubber_stamp_versions", force: true do |t|
     t.string   "versionable_type",                   null: false
     t.integer  "versionable_id",                     null: false
@@ -169,6 +180,20 @@ ActiveRecord::Schema.define(version: 20140206204920) do
 
   create_table "users", force: true do |t|
     t.string "name", null: false
+  end
+
+  create_table "validating_resources", force: true do |t|
+    t.boolean  "r_boolean"
+    t.date     "r_date"
+    t.datetime "r_datetime"
+    t.decimal  "r_decimal"
+    t.float    "r_float"
+    t.integer  "r_integer"
+    t.string   "r_string"
+    t.text     "r_text"
+    t.time     "r_time"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "versionable_resources", force: true do |t|
