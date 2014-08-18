@@ -1,6 +1,11 @@
 RubberStamp [![Gem Version](https://badge.fury.io/rb/rubber_stamp.svg)](http://badge.fury.io/rb/rubber_stamp) [![Build Status](https://travis-ci.org/timothycommoner/rubber_stamp.svg?branch=master)](https://travis-ci.org/timothycommoner/rubber_stamp) [![Code Climate](https://codeclimate.com/github/timothycommoner/rubber_stamp/badges/gpa.svg)](https://codeclimate.com/github/timothycommoner/rubber_stamp)
 =====================
-RubberStamp extends Rails with versioning functionality, including the ability to accept and decline revisions. This gem is inspired by the excellent [PaperTrail](https://github.com/airblade/paper_trail), though with more emphasis on controlling incoming data than simply recording it. This makes RubberStamp ideal for crowd-sourced websites, as contributions and revisions can be reviewed before publication.
+
+ * Approve and decline user revisions
+ * Keep meticulous records of all changes to your data
+ * Harness the awesome power of a bureaucrat
+
+RubberStamp is inspired by the excellent [PaperTrail](https://github.com/airblade/paper_trail), though with more emphasis on controlling incoming data than simply recording it. This makes RubberStamp ideal for crowd-sourced websites, as contributions and revisions can be reviewed before publication.
 
 Compatibility
 -------------
@@ -203,3 +208,10 @@ License
 -------
 
 Released under the MIT license.
+
+Important Trivia
+----------------
+
+"Stamping has become a very popular home based craft, and there are a number of forums, some with many thousands of members. Craft stampers tend to be associated with other paper crafts, such as card making and scrapbooking."
+
+--Wikipedia
