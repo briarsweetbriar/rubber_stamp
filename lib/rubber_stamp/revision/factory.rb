@@ -51,7 +51,7 @@ class Revision::Factory < Revision
   end
 
   def build_attribute(attr)
-    return build_text_attributes(attr) if attr_is_text?(attr)
+    # return build_text_attributes(attr) if attr_is_text?(attr)
     version_attributes.build(
       name: attr.key,
       new_value: attr.value,
