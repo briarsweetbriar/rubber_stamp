@@ -10,7 +10,7 @@ script:
 deploy:
   provider: rubygems
   api_key:
-    secure: KBicoeTv4ogdPShmwIOAL2M0Kl+2Lpg9A3H2AKWtYLsir4x1e9FAlg1I/OqZyCdG1ButMiF2OAoOxtSPt2xfORSz7UTfuFXuDvEDvI14dKwJSyjYJKaCIp2zyDQM7BUFY/5tskK5QznTrrE/Fr/CmDawwhE3dYep9tKljWpyRj8=
+    secure: XvLApUuYpnEyRYT3IY6+07PERUGo8X7SnWXt8kkx/loQdPJ4xDoFoF+wIlCAOWQxc0pq3qWTB00ZTYFRyK1lcYrT2PLL5rAdSWpIHkcoivLzvKePH1cPcx0r+scKSufu9Ee5go02ZMkVmouoP0tw8NQeS4vK+q2uC6xJ8yJrYcU=
   gem: rubber_stamp
   on:
-    repo: timothythehuman/rubber_stamp
+    repo: timothycommoner/rubber_stamp
