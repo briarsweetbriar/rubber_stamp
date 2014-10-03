@@ -18,6 +18,7 @@ class CreateRubberStampVersions < ActiveRecord::Migration
       t.boolean  :pending, null: false, default: true
 
       t.datetime :created_at
+      t.datetime :accepted_at
     end
     add_index :rubber_stamp_versions, :initial
     add_index :rubber_stamp_versions, :accepted
@@ -26,5 +27,7 @@ class CreateRubberStampVersions < ActiveRecord::Migration
     add_index :rubber_stamp_versions,
       [:versionable_type, :versionable_id],
       name: "rubber_stamp_versions_on_versionable"
+    add_index :rubber_stamp_versions, :created_at
+    add_index :rubber_stamp_versions, :accepted_at
   end
 end

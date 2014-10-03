@@ -16,8 +16,9 @@ require "rubber_stamp/revision"
 require "rubber_stamp/revision/auditor"
 require "rubber_stamp/revision/factory"
 require "rubber_stamp/revision/publisher"
-require "rubber_stamp/revision/text_attribute"
-require "rubber_stamp/revision/text_attribute/factory"
+require "rubber_stamp/revision/diff_attribute"
+require "rubber_stamp/revision/diff_attribute/factory"
+require "rubber_stamp/revision/diff_attribute/rewinder"
 
 # Add utility classes
 require "support/array_converter"
@@ -74,6 +75,9 @@ module RubberStamp
         self.versionable_attribute_names = options[:versionable_attributes] ||
                                            set_versionable_attribute_names(
                                            options[:nonversionable_attributes])
+
+        cattr_accessor :diff_attribute_names
+        self.diff_attribute_names = ArrayConverter.to_s!(options[:diff_attribute_names]) || []
         
         def new_with_version(attributes)
           resource = self.new(attributes)

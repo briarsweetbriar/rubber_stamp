@@ -66,6 +66,15 @@ describe RubberStamp::Version do
     end
   end
 
+  it 'sets the accepted_at date when accepted' do
+    resource = create(:versionable_resource)
+    version = resource.submit_revision(r_string: 'new string')
+    Timecop.freeze(DateTime.current)
+    version.accept
+    expect(version.accepted_at).to eq DateTime.current
+    Timecop.return
+  end
+
   context 'accepts blocks' do
     before :each do
       @resource = create(:versionable_resource)

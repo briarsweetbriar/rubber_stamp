@@ -14,7 +14,7 @@ module RubberStamp
       if pending?
         versionable.reload
         Revision::Publisher.new(self).accept_revision unless initial?
-        update_attributes(pending: false, accepted: true)
+        update_attributes(pending: false, accepted: true, accepted_at: DateTime.current)
         block.call(self) if block_given?
       end
     end

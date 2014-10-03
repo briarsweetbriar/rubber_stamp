@@ -8,6 +8,7 @@ Spork.prefork do
   require 'rspec/autorun'
   require 'factory_girl_rails'
   require 'byebug'
+  require 'timecop'
 
   # Requires supporting ruby files with custom matchers and macros, etc,
   # in spec/support/ and its subdirectories.

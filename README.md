@@ -183,6 +183,18 @@ Or:
       version.versionable.destroy if version.initial?
     end
 
+Text Diffs
+----------
+
+By default, RubberStamp records changes to the attribute as a whole, though sometimes this is ineffective. For instance, imagine you have a large block of text. Rather than overwriting the whole thing, it makes more sense to record fine grain diffs, such as deleting the substring from index 76 to 94 and inserting the substring 'new text' at index 89. In addition to being more effecient, it allows contributors to concurrently edit the document without necessarily overriding eachother's edits. To gain this fine-grain control over an attribute, declare it in a `diff_attribute_names` array:
+
+    acts_as_versionable diff_attribute_names: [:my_text, :my_string]
+
+You can then access the diffs off of the attribute's `version_attribute`. For instance:
+
+    @version.version_attributes.find_by(name: "my_text").diff_attributes
+
+Each `diff_attribute` will represent a fine-grain change to the attribute. The point at which the substring starts is at `diff_attribute.index`. Its text can be found at `diff_attribute.text`. While substrings that are marked for deletion will return true for `diff_attribute.deletion`.
 
 Issues
 ------

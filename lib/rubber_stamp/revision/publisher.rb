@@ -17,7 +17,14 @@ class Revision::Publisher < Revision
   end
 
   def new_attributes
-    version_attributes.each_with_object({}) {|v, h| h[v.name] = v.new_value }
+    version_attributes.each_with_object({}) do |version_attribute, hash|
+      new_value = if version_attribute.diff_attributes.any?
+        Revision::DiffAttribute::Rewinder.new(version_attribute, versionable[version_attribute.name]).recompile
+      else
+        version_attribute.new_value
+      end
+      hash[version_attribute.name] = new_value
+    end
   end
 
   def create_versionable
@@ -26,7 +33,7 @@ class Revision::Publisher < Revision
   end
 
   def update_versionable
-    versionable.update_attributes(new_attributes)
+    versionable.update_columns(new_attributes)
   end
 
   def update_version_children

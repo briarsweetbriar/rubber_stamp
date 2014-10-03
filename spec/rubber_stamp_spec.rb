@@ -143,7 +143,7 @@ describe "RubberStamp" do
     #   it 'by creating versions with the suggested attributes' do
     #     @resource.reload
     #     version_attribute = @version.version_attributes.find_by(name: "r_text")
-    #     expect(version_attribute.version_text_attributes.size).to eq(3)
+    #     expect(version_attribute.diff_attributes.size).to eq(3)
     #   end
 
     #   it 'by updating model data if its revisions are accepted' do

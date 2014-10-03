@@ -3,7 +3,7 @@
 
 require "diff_match_patch_native"
 
-class Revision::TextAttribute::Factory < Revision::TextAttribute
+class Revision::DiffAttribute::Factory < Revision::DiffAttribute
 
   attr_reader :attr, :dmp, :version, :version_attribute, :versionable
   attr_accessor :index
@@ -34,12 +34,12 @@ class Revision::TextAttribute::Factory < Revision::TextAttribute
 
   def scan_for_change(diff)
     diff = define_diff(diff)
-    build_text_attribute(diff) if diff.type != :equality
-    @index += diff.value.length
+    build_diff_attribute(diff) if diff.type != :equality
+    @index += diff.value.length if diff.type != :insertion
   end
 
-  def build_text_attribute(diff)
-    vta = version_attribute.version_text_attributes.build(text: diff.value)
+  def build_diff_attribute(diff)
+    vta = version_attribute.diff_attributes.build(text: diff.value)
     vta.deletion = true if diff.type == :deletion
     vta.index = index
   end

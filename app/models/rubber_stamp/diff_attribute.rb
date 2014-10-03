@@ -1,5 +1,5 @@
 module RubberStamp
-  class VersionTextAttribute < ActiveRecord::Base
+  class DiffAttribute < ActiveRecord::Base
 
     belongs_to :version_attribute
 

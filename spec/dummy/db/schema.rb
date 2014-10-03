@@ -31,6 +31,20 @@ ActiveRecord::Schema.define(version: 20140809204930) do
     t.datetime "updated_at"
   end
 
+  create_table "diff_resources", force: true do |t|
+    t.boolean  "r_boolean"
+    t.date     "r_date"
+    t.datetime "r_datetime"
+    t.decimal  "r_decimal"
+    t.float    "r_float"
+    t.integer  "r_integer"
+    t.string   "r_string"
+    t.text     "r_text"
+    t.time     "r_time"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "grand_child_resources", force: true do |t|
     t.integer  "child_resource_id"
     t.boolean  "r_boolean"
@@ -125,6 +139,17 @@ ActiveRecord::Schema.define(version: 20140809204930) do
     t.datetime "updated_at"
   end
 
+  create_table "rubber_stamp_diff_attributes", force: true do |t|
+    t.integer "version_attribute_id",                 null: false
+    t.integer "index"
+    t.string  "text"
+    t.boolean "deletion",             default: false, null: false
+  end
+
+  add_index "rubber_stamp_diff_attributes", ["deletion"], name: "index_rubber_stamp_diff_attributes_on_deletion", using: :btree
+  add_index "rubber_stamp_diff_attributes", ["index"], name: "index_rubber_stamp_diff_attributes_on_index", using: :btree
+  add_index "rubber_stamp_diff_attributes", ["version_attribute_id"], name: "rubber_stamp_diff_attriubtes_on_attribute", using: :btree
+
   create_table "rubber_stamp_version_attributes", force: true do |t|
     t.string  "version_type", null: false
     t.integer "version_id",   null: false
@@ -148,17 +173,6 @@ ActiveRecord::Schema.define(version: 20140809204930) do
   add_index "rubber_stamp_version_children", ["version_type", "version_id"], name: "rubber_stamp_version_children_on_version", using: :btree
   add_index "rubber_stamp_version_children", ["versionable_type", "versionable_id"], name: "rubber_stamp_version_children_on_versionable", using: :btree
 
-  create_table "rubber_stamp_version_text_attributes", force: true do |t|
-    t.integer "version_attribute_id",                 null: false
-    t.integer "index"
-    t.string  "text"
-    t.boolean "deletion",             default: false, null: false
-  end
-
-  add_index "rubber_stamp_version_text_attributes", ["deletion"], name: "index_rubber_stamp_version_text_attributes_on_deletion", using: :btree
-  add_index "rubber_stamp_version_text_attributes", ["index"], name: "index_rubber_stamp_version_text_attributes_on_index", using: :btree
-  add_index "rubber_stamp_version_text_attributes", ["version_attribute_id"], name: "rubber_stamp_version_text_attriubtes_on_attribute", using: :btree
-
   create_table "rubber_stamp_versions", force: true do |t|
     t.string   "versionable_type",                   null: false
     t.integer  "versionable_id",                     null: false
@@ -170,9 +184,12 @@ ActiveRecord::Schema.define(version: 20140809204930) do
     t.boolean  "declined",           default: false, null: false
     t.boolean  "pending",            default: true,  null: false
     t.datetime "created_at"
+    t.datetime "accepted_at"
   end
 
   add_index "rubber_stamp_versions", ["accepted"], name: "index_rubber_stamp_versions_on_accepted", using: :btree
+  add_index "rubber_stamp_versions", ["accepted_at"], name: "index_rubber_stamp_versions_on_accepted_at", using: :btree
+  add_index "rubber_stamp_versions", ["created_at"], name: "index_rubber_stamp_versions_on_created_at", using: :btree
   add_index "rubber_stamp_versions", ["declined"], name: "index_rubber_stamp_versions_on_declined", using: :btree
   add_index "rubber_stamp_versions", ["initial"], name: "index_rubber_stamp_versions_on_initial", using: :btree
   add_index "rubber_stamp_versions", ["pending"], name: "index_rubber_stamp_versions_on_pending", using: :btree
